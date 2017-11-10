@@ -40,7 +40,8 @@
 #define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
 #else // IS LIVE STEEM NETWORK
 
-#define STEEMIT_INIT_PUBLIC_KEY_STR             "STM8GC13uCZbP44HzMLV6zPZGwVQ8Nt4Kji8PapsPiNq1BK153XTX"
+//#define STEEMIT_INIT_PUBLIC_KEY_STR             "STM8GC13uCZbP44HzMLV6zPZGwVQ8Nt4Kji8PapsPiNq1BK153XTX"
+#define STEEMIT_INIT_PUBLIC_KEY_STR             "STM6LLegbAgLAy28EHrffBVuANFWcFgmqRMW13wBmTExqFE9SCkg4"
 #define STEEMIT_CHAIN_ID                        (steemit::protocol::chain_id_type())
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('E') << 24) | (uint64_t('E') << 32) | (uint64_t('M') << 40)) ///< STEEM with 3 digits of precision
@@ -49,8 +50,11 @@
 #define STEEMIT_SYMBOL                          "STEEM"
 #define STEEMIT_ADDRESS_PREFIX                  "STM"
 
-#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1458835200))
-#define STEEMIT_MINING_TIME                     (fc::time_point_sec(1458838800))
+#define STEEMIT_GENESIS_TIME_EPOCH              1458835200  // 1458835200 1509704047
+//#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1458835200))
+#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(STEEMIT_GENESIS_TIME_EPOCH))
+//#define STEEMIT_MINING_TIME                     (fc::time_point_sec(1458838800))
+#define STEEMIT_MINING_TIME                     (fc::time_point_sec(STEEMIT_GENESIS_TIME_EPOCH + 90061))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12 (60*60*24)    /// 1 day
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 (60*60*12)    /// 12 hours
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
@@ -74,29 +78,35 @@
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 7)
-#define STEEMIT_START_MINER_VOTING_BLOCK        (STEEMIT_BLOCKS_PER_DAY * 30)
+//#define STEEMIT_START_MINER_VOTING_BLOCK        (STEEMIT_BLOCKS_PER_DAY * 30)
+#define STEEMIT_START_MINER_VOTING_BLOCK        (1 * 30)
 
 #define STEEMIT_INIT_MINER_NAME                 "initminer"
 #define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_INIT_TIME                       (fc::time_point_sec());
 
 #define STEEMIT_MAX_WITNESSES                   21
+//#define STEEMIT_MAX_WITNESSES                   3
 
 #define STEEMIT_MAX_VOTED_WITNESSES_HF0         19
+//#define STEEMIT_MAX_VOTED_WITNESSES_HF0         1
 #define STEEMIT_MAX_MINER_WITNESSES_HF0         1
 #define STEEMIT_MAX_RUNNER_WITNESSES_HF0        1
 
 #define STEEMIT_MAX_VOTED_WITNESSES_HF17        20
+//#define STEEMIT_MAX_VOTED_WITNESSES_HF17        2
 #define STEEMIT_MAX_MINER_WITNESSES_HF17        0
 #define STEEMIT_MAX_RUNNER_WITNESSES_HF17       1
 
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
+//#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     1
 #define STEEMIT_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define STEEMIT_MAX_MEMO_SIZE                   2048
 #define STEEMIT_MAX_PROXY_RECURSION_DEPTH       4
 #define STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16 104
 #define STEEMIT_VESTING_WITHDRAW_INTERVALS      13
 #define STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS (60*60*24*7) /// 1 week per interval
+// #define STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS (60*10) // 10 mins
 #define STEEMIT_MAX_WITHDRAW_ROUTES             10
 #define STEEMIT_SAVINGS_WITHDRAW_TIME        	(fc::days(3))
 #define STEEMIT_SAVINGS_WITHDRAW_REQUEST_LIMIT  100
@@ -215,7 +225,8 @@
 #define STEEMIT_MAX_PERMLINK_LENGTH             256
 #define STEEMIT_MAX_WITNESS_URL_LENGTH          2048
 
-#define STEEMIT_INIT_SUPPLY                     int64_t(0)
+//#define STEEMIT_INIT_SUPPLY                     int64_t(0)
+#define STEEMIT_INIT_SUPPLY                     int64_t(50000000000ll)
 #define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
 

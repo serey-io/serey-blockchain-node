@@ -11,6 +11,7 @@
 
 #include <steemit/protocol/types.hpp>
 #include <steemit/protocol/version.hpp>
+#include <steemit/protocol/config.hpp>
 
 namespace steemit { namespace chain {
 

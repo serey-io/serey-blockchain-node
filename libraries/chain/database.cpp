@@ -150,7 +150,8 @@ void database::reindex( const fc::path& data_dir, const fc::path& shared_mem_dir
    {
       ilog( "Reindexing Blockchain" );
       wipe( data_dir, shared_mem_dir, false );
-      open( data_dir, shared_mem_dir, 0, shared_file_size, chainbase::database::read_write );
+//      open( data_dir, shared_mem_dir, 0, shared_file_size, chainbase::database::read_write );
+      open( data_dir, shared_mem_dir, STEEMIT_INIT_SUPPLY, shared_file_size, chainbase::database::read_write );
       _fork_db.reset();    // override effect of _fork_db.start_block() call in open()
 
       auto start = fc::time_point::now();
@@ -1936,7 +1937,8 @@ asset database::get_pow_reward()const
 #endif
 
    static_assert( STEEMIT_BLOCK_INTERVAL == 3, "this code assumes a 3-second time interval" );
-   static_assert( STEEMIT_MAX_WITNESSES == 21, "this code assumes 21 per round" );
+// tuanpa - temporary for private testnet only
+//   static_assert( STEEMIT_MAX_WITNESSES == 21, "this code assumes 21 per round" );
    asset percent( calc_percent_reward_per_round< STEEMIT_POW_APR_PERCENT >( props.virtual_supply.amount ), STEEM_SYMBOL);
    return std::max( percent, STEEMIT_MIN_POW_REWARD );
 }
@@ -2392,6 +2394,10 @@ void database::init_genesis( uint64_t init_supply )
             a.name = STEEMIT_INIT_MINER_NAME + ( i ? fc::to_string( i ) : std::string() );
             a.memo_key = init_public_key;
             a.balance  = asset( i ? 0 : init_supply, STEEM_SYMBOL );
+
+             // usefull:
+             // https://github.com/steemit/steem/pull/1431/commits/ad861236e16fcffadc804b925f9b358e9a2fb176
+             // Add STEEMIT_INIT_SBD_SUPPLY config option
          } );
 
          create< account_authority_object >( [&]( account_authority_object& auth )
@@ -2436,6 +2442,14 @@ void database::init_genesis( uint64_t init_supply )
       {
          wso.current_shuffled_witnesses[0] = STEEMIT_INIT_MINER_NAME;
       } );
+
+
+
+       // tuanpa
+      // https://github.com/steemit/steem/issues/1407
+       set_hardfork( STEEMIT_NUM_HARDFORKS, true);
+
+
    }
    FC_CAPTURE_AND_RETHROW()
 }
@@ -2681,6 +2695,7 @@ void database::_apply_block( const signed_block& next_block )
    expire_escrow_ratification();
    process_decline_voting_rights();
 
+   // tuanpa comment out - dont need hardfork anymore, because we applied all hardfork at init_genesis
    process_hardforks();
 
    // notify observers that the block has been applied
