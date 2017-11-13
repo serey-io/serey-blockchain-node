@@ -43,7 +43,8 @@
 //#define STEEMIT_INIT_PUBLIC_KEY_STR             "STM8GC13uCZbP44HzMLV6zPZGwVQ8Nt4Kji8PapsPiNq1BK153XTX"
 //#define STEEMIT_INIT_PUBLIC_KEY_STR             "STM6LLegbAgLAy28EHrffBVuANFWcFgmqRMW13wBmTExqFE9SCkg4"
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "SRY6LLegbAgLAy28EHrffBVuANFWcFgmqRMW13wBmTExqFE9SCkg4"
-#define STEEMIT_CHAIN_ID                        (steemit::protocol::chain_id_type())
+//#define STEEMIT_CHAIN_ID                        (steemit::protocol::chain_id_type())
+#define STEEMIT_CHAIN_ID                        (fc::sha256::hash("serey")) // 3b9a062c4c1f4338f6932ec8bfc083d99369df7479467bbab1811976181b0daf
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 //#define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('T') << 16) | (uint64_t('E') << 24) | (uint64_t('E') << 32) | (uint64_t('M') << 40)) ///< STEEM with 3 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('E') << 16) | (uint64_t('R') << 24) | (uint64_t('E') << 32) | (uint64_t('Y') << 40)) ///< SEREY with 3 digits of precision
