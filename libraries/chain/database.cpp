@@ -95,7 +95,7 @@ database::~database()
    clear_pending();
 }
 
-void database::open( const fc::path& data_dir, const fc::path& shared_mem_dir, uint64_t initial_supply, uint64_t shared_file_size, uint32_t chainbase_flags )
+void database::open( const fc::path& data_dir, const fc::path& shared_mem_dir, uint64_t initial_supply, uint64_t initial_supply_srd, uint64_t shared_file_size, uint32_t chainbase_flags )
 {
    try
    {
@@ -2336,7 +2336,7 @@ void database::init_schema()
    return;*/
 }
 
-void database::init_genesis( uint64_t init_supply )
+void database::init_genesis( uint64_t init_supply, uint64_t init_supply_srd )
 {
    try
    {
@@ -2395,9 +2395,11 @@ void database::init_genesis( uint64_t init_supply )
             a.memo_key = init_public_key;
             a.balance  = asset( i ? 0 : init_supply, STEEM_SYMBOL );
 
-             // usefull:
-             // https://github.com/steemit/steem/pull/1431/commits/ad861236e16fcffadc804b925f9b358e9a2fb176
-             // Add STEEMIT_INIT_SBD_SUPPLY config option
+            // usefull:
+            // https://github.com/steemit/steem/pull/1431/commits/ad861236e16fcffadc804b925f9b358e9a2fb176
+            // Add STEEMIT_INIT_SBD_SUPPLY config option
+
+            a.sbd_balance = asset( i ? 0 : init_supply_srd, SBD_SYMBOL );
          } );
 
          create< account_authority_object >( [&]( account_authority_object& auth )
@@ -2424,6 +2426,9 @@ void database::init_genesis( uint64_t init_supply )
          p.recent_slots_filled = fc::uint128::max_value();
          p.participation_count = 128;
          p.current_supply = asset( init_supply, STEEM_SYMBOL );
+
+         p.current_sbd_supply = asset( init_supply_srd, SBD_SYMBOL );
+
          p.virtual_supply = p.current_supply;
          p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
       } );
