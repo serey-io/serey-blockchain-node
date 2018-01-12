@@ -233,9 +233,11 @@
 #define STEEMIT_MAX_WITNESS_URL_LENGTH          2048
 
 //#define STEEMIT_INIT_SUPPLY                     int64_t(0)
-#define STEEMIT_INIT_SUPPLY                     int64_t(50000000000ll)
+#define STEEMIT_INIT_SUPPLY                     int64_t(1000000000000ll) // 50m = 50000000000ll, changed to 1b token
 #define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
+
+#define STEEMIT_INIT_SUPPLY_SRD                 int64_t(4000000000000ll) // 4b token
 
 #define STEEMIT_MIN_TRANSACTION_SIZE_LIMIT      1024
 #define STEEMIT_SECONDS_PER_YEAR                (uint64_t(60*60*24*365ll))
