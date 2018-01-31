@@ -38,6 +38,7 @@ tests/performance_test
 doxygen
 
 build
+cmake-build-debug
 
 wallet.json
 witness_node_data_dir
