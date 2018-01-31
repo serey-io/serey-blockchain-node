@@ -19,8 +19,12 @@
 #define STEEMIT_SYMBOL                          "TEST"
 #define STEEMIT_ADDRESS_PREFIX                  "TST"
 
-#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1451606400))
-#define STEEMIT_MINING_TIME                     (fc::time_point_sec(1451606400))
+// 1451606400 ~ Sun Jan 18 1970 02:13:26 GMT+0700 (+08)
+// 1515765200 ~ Fri Jan 12 2018 20:53:20 GMT+0700 (+08)
+//#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1451606400))
+#define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(1515765200))
+//#define STEEMIT_MINING_TIME                     (fc::time_point_sec(1451606400))
+#define STEEMIT_MINING_TIME                     (fc::time_point_sec(1515765200))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60) /// 1 hr
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF12 (STEEMIT_CASHOUT_WINDOW_SECONDS)
 #define STEEMIT_CASHOUT_WINDOW_SECONDS_PRE_HF17 (STEEMIT_CASHOUT_WINDOW_SECONDS)
@@ -72,7 +76,8 @@
 #define STEEMIT_UPVOTE_LOCKOUT_HF17             (fc::hours(12))
 
 #define STEEMIT_ORIGINAL_MIN_ACCOUNT_CREATION_FEE  100000
-#define STEEMIT_MIN_ACCOUNT_CREATION_FEE           1
+//#define STEEMIT_MIN_ACCOUNT_CREATION_FEE           1
+#define STEEMIT_MIN_ACCOUNT_CREATION_FEE           0
 
 #define STEEMIT_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
@@ -92,21 +97,21 @@
 #define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_INIT_TIME                       (fc::time_point_sec());
 
-#define STEEMIT_MAX_WITNESSES                   21
-//#define STEEMIT_MAX_WITNESSES                   3
+//#define STEEMIT_MAX_WITNESSES                   21
+#define STEEMIT_MAX_WITNESSES                   5 //3
 
-#define STEEMIT_MAX_VOTED_WITNESSES_HF0         19
-//#define STEEMIT_MAX_VOTED_WITNESSES_HF0         1
+//#define STEEMIT_MAX_VOTED_WITNESSES_HF0         19
+#define STEEMIT_MAX_VOTED_WITNESSES_HF0         3
 #define STEEMIT_MAX_MINER_WITNESSES_HF0         1
 #define STEEMIT_MAX_RUNNER_WITNESSES_HF0        1
 
-#define STEEMIT_MAX_VOTED_WITNESSES_HF17        20
-//#define STEEMIT_MAX_VOTED_WITNESSES_HF17        2
+//#define STEEMIT_MAX_VOTED_WITNESSES_HF17        20
+#define STEEMIT_MAX_VOTED_WITNESSES_HF17        4
 #define STEEMIT_MAX_MINER_WITNESSES_HF17        0
 #define STEEMIT_MAX_RUNNER_WITNESSES_HF17       1
 
-#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
-//#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     1
+//#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     17 // 17 of the 21 dpos witnesses (20 elected and 1 virtual time) required for hardfork. This guarantees 75% participation on all subsequent rounds.
+#define STEEMIT_HARDFORK_REQUIRED_WITNESSES     3 //1
 #define STEEMIT_MAX_TIME_UNTIL_EXPIRATION       (60*60) // seconds,  aka: 1 hour
 #define STEEMIT_MAX_MEMO_SIZE                   2048
 #define STEEMIT_MAX_PROXY_RECURSION_DEPTH       4
@@ -136,7 +141,8 @@
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
 #define STEEMIT_DEFAULT_SBD_INTEREST_RATE       (10*STEEMIT_1_PERCENT) ///< 10% APR
 
-#define STEEMIT_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
+//#define STEEMIT_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
+#define STEEMIT_INFLATION_RATE_START_PERCENT    (97) // redux to ~ STEEMIT_INFLATION_RATE_STOP_PERCENT
 #define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
 #define STEEMIT_CONTENT_REWARD_PERCENT          (75*STEEMIT_1_PERCENT) //75% of inflation, 7.125% inflation
@@ -233,11 +239,11 @@
 #define STEEMIT_MAX_WITNESS_URL_LENGTH          2048
 
 //#define STEEMIT_INIT_SUPPLY                     int64_t(0)
-#define STEEMIT_INIT_SUPPLY                     int64_t(1000000000000ll) // 50m = 50000000000ll, changed to 1b token
+#define STEEMIT_INIT_SUPPLY                     int64_t(100000000000ll) // 50m = 50000000000ll, changed to 1b token (1000000000000ll) => changed again to 100m token
 #define STEEMIT_MAX_SHARE_SUPPLY                int64_t(1000000000000000ll)
 #define STEEMIT_MAX_SIG_CHECK_DEPTH             2
 
-#define STEEMIT_INIT_SUPPLY_SRD                 int64_t(4000000000000ll) // 4b token
+#define STEEMIT_INIT_SUPPLY_SRD                 int64_t(4000000000ll) // 4b token (4000000000000ll) => changed to 4m token
 
 #define STEEMIT_MIN_TRANSACTION_SIZE_LIMIT      1024
 #define STEEMIT_SECONDS_PER_YEAR                (uint64_t(60*60*24*365ll))
@@ -250,10 +256,15 @@
 #define STEEMIT_MIN_BLOCK_SIZE                  115
 #define STEEMIT_BLOCKS_PER_HOUR                 (60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_FEED_INTERVAL_BLOCKS            (STEEMIT_BLOCKS_PER_HOUR)
+//#define STEEMIT_FEED_INTERVAL_BLOCKS            (120)
 #define STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16   (24*7) /// 7 days * 24 hours per day
+//#define STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16   (1)
 #define STEEMIT_FEED_HISTORY_WINDOW             (12*7) // 3.5 days
-#define STEEMIT_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
+//#define STEEMIT_FEED_HISTORY_WINDOW             (1) // 1h
+//#define STEEMIT_MAX_FEED_AGE_SECONDS            (60*60*24*7) // 7 days
+#define STEEMIT_MAX_FEED_AGE_SECONDS            (60*60*24*365*10) // 10 years
 #define STEEMIT_MIN_FEEDS                       (STEEMIT_MAX_WITNESSES/3) /// protects the network from conversions before price has been established
+//#define STEEMIT_MIN_FEEDS                       (1) /// protects the network from conversions before price has been established
 #define STEEMIT_CONVERSION_DELAY_PRE_HF_16      (fc::days(7))
 #define STEEMIT_CONVERSION_DELAY                (fc::hours(STEEMIT_FEED_HISTORY_WINDOW)) //3.5 day conversion
 
