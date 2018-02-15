@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#define STEEMIT_BLOCKCHAIN_VERSION              ( version(0, 19, 3) )
+#define STEEMIT_BLOCKCHAIN_VERSION              ( version(0, 20, 0) ) //( version(0, 19, 3) )
 #define STEEMIT_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( STEEMIT_BLOCKCHAIN_VERSION ) )
 
 #ifdef IS_TEST_NET
@@ -142,7 +142,7 @@
 #define STEEMIT_DEFAULT_SBD_INTEREST_RATE       (10*STEEMIT_1_PERCENT) ///< 10% APR
 
 //#define STEEMIT_INFLATION_RATE_START_PERCENT    (978) // Fixes block 7,000,000 to 9.5%
-#define STEEMIT_INFLATION_RATE_START_PERCENT    (97) // redux to ~ STEEMIT_INFLATION_RATE_STOP_PERCENT
+#define STEEMIT_INFLATION_RATE_START_PERCENT    (97) // reduce to ~ STEEMIT_INFLATION_RATE_STOP_PERCENT
 #define STEEMIT_INFLATION_RATE_STOP_PERCENT     (95) // 0.95%
 #define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
 #define STEEMIT_CONTENT_REWARD_PERCENT          (75*STEEMIT_1_PERCENT) //75% of inflation, 7.125% inflation

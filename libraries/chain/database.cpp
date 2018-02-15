@@ -1793,6 +1793,14 @@ void database::process_funds()
       // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
       int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
 
+      /**
+       * inflation rate reduce 90% (=10%) after HF20
+       */
+      if( has_hardfork( STEEMIT_HARDFORK_0_20) )
+      {
+         current_inflation_rate = int64_t(current_inflation_rate/10);
+      }
+
       auto new_steem = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
       auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
       if( has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
@@ -3571,7 +3579,9 @@ void database::init_hardforks()
    FC_ASSERT( STEEMIT_HARDFORK_0_19 == 19, "Invalid hardfork configuration" );
    _hardfork_times[ STEEMIT_HARDFORK_0_19 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_19_TIME );
    _hardfork_versions[ STEEMIT_HARDFORK_0_19 ] = STEEMIT_HARDFORK_0_19_VERSION;
-
+   FC_ASSERT( STEEMIT_HARDFORK_0_20 == 20, "Invalid hardfork configuration" );
+   _hardfork_times[ STEEMIT_HARDFORK_0_20 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_20_TIME );
+   _hardfork_versions[ STEEMIT_HARDFORK_0_20 ] = STEEMIT_HARDFORK_0_20_VERSION;
 
    const auto& hardforks = get_hardfork_property_object();
    FC_ASSERT( hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS",STEEMIT_NUM_HARDFORKS) );
@@ -3892,6 +3902,15 @@ void database::apply_hardfork( uint32_t hardfork )
             {
                remove( *delegation_ptr );
             }
+         }
+         break;
+      case STEEMIT_HARDFORK_0_20:
+         {
+            // TODO: inflation rate, promotion, and SRD
+
+
+
+
          }
          break;
       default:
