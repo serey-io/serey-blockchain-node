@@ -442,6 +442,13 @@ struct comment_options_extension_visitor
 
 void comment_options_evaluator::do_apply( const comment_options_operation& o )
 {
+   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+       if (o.percent_steem_dollars > 0) {
+           FC_ASSERT( false, "comment_options_operation.percent_steem_dollars must be 0 since hardfork 21" );
+       }
+   }
+
    if( _db.has_hardfork( STEEMIT_HARDFORK_0_10 ) )
    {
       const auto& auth = _db.get_account( o.author );
