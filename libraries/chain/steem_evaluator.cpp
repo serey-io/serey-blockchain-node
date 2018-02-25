@@ -867,6 +867,12 @@ void escrow_release_evaluator::do_apply( const escrow_release_operation& o )
 
 void transfer_evaluator::do_apply( const transfer_operation& o )
 {
+   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+       FC_ASSERT( o.amount.symbol_name() == SBD_SYMBOL, "SRD disabled since hardfork 21" );
+   }
+
+
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = _db.get_account(o.to);
 
@@ -1759,6 +1765,8 @@ void feed_publish_evaluator::do_apply( const feed_publish_operation& o )
 
 void convert_evaluator::do_apply( const convert_operation& o )
 {
+  FC_ASSERT( _db.has_hardfork( STEEMIT_HARDFORK_0_21 ), "convert_operation disabled since hardfork 21" );
+
   const auto& owner = _db.get_account( o.owner );
   FC_ASSERT( _db.get_balance( owner, o.amount.symbol ) >= o.amount, "Account does not have sufficient balance for conversion." );
 
