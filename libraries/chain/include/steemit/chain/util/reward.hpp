@@ -31,7 +31,7 @@ struct comment_reward_context
    uint128_t  content_constant = STEEMIT_CONTENT_CONSTANT_HF0;
 };
 
-uint64_t get_rshare_reward( const comment_reward_context& ctx );
+uint64_t get_rshare_reward( const comment_reward_context& ctx, bool has_hardfork_0_21 );
 
 inline uint128_t get_content_constant_s()
 {

@@ -442,6 +442,13 @@ struct comment_options_extension_visitor
 
 void comment_options_evaluator::do_apply( const comment_options_operation& o )
 {
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+       if (o.percent_steem_dollars > 0) {
+           FC_ASSERT( false, "comment_options_operation.percent_steem_dollars must be 0 since hardfork 21" );
+       }
+   }
+
    if( _db.has_hardfork( STEEMIT_HARDFORK_0_10 ) )
    {
       const auto& auth = _db.get_account( o.author );
@@ -867,6 +874,13 @@ void escrow_release_evaluator::do_apply( const escrow_release_operation& o )
 
 void transfer_evaluator::do_apply( const transfer_operation& o )
 {
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+      if (o.amount.symbol == SBD_SYMBOL) {
+         FC_ASSERT( false, "SRD disabled since hardfork 21" );
+      }
+   }
+
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = _db.get_account(o.to);
 
@@ -1759,6 +1773,11 @@ void feed_publish_evaluator::do_apply( const feed_publish_operation& o )
 
 void convert_evaluator::do_apply( const convert_operation& o )
 {
+  if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
+  {
+     FC_ASSERT( false, "convert_operation disabled since hardfork 21" );
+  }
+
   const auto& owner = _db.get_account( o.owner );
   FC_ASSERT( _db.get_balance( owner, o.amount.symbol ) >= o.amount, "Account does not have sufficient balance for conversion." );
 
@@ -1783,6 +1802,11 @@ void convert_evaluator::do_apply( const convert_operation& o )
 
 void limit_order_create_evaluator::do_apply( const limit_order_create_operation& o )
 {
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+      FC_ASSERT( false, "limit_order_create_operation disabled since hardfork 21" );
+   }
+
    FC_ASSERT( o.expiration > _db.head_block_time(), "Limit order has to expire after head block time." );
 
    const auto& owner = _db.get_account( o.owner );
@@ -1808,6 +1832,11 @@ void limit_order_create_evaluator::do_apply( const limit_order_create_operation&
 
 void limit_order_create2_evaluator::do_apply( const limit_order_create2_operation& o )
 {
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+      FC_ASSERT( false, "limit_order_create2_operation disabled since hardfork 21" );
+   }
+
    FC_ASSERT( o.expiration > _db.head_block_time(), "Limit order has to expire after head block time." );
 
    const auto& owner = _db.get_account( o.owner );
@@ -2020,6 +2049,10 @@ void change_recovery_account_evaluator::do_apply( const change_recovery_account_
 
 void transfer_to_savings_evaluator::do_apply( const transfer_to_savings_operation& op )
 {
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+      FC_ASSERT( false, "transfer_to_savings_operation since hardfork 21" );
+   }
    const auto& from = _db.get_account( op.from );
    const auto& to   = _db.get_account(op.to);
    FC_ASSERT( _db.get_balance( from, op.amount.symbol ) >= op.amount, "Account does not have sufficient funds to transfer to savings." );
