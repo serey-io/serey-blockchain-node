@@ -54,8 +54,18 @@ uint64_t get_rshare_reward( const comment_reward_context& ctx )
    FC_ASSERT( payout_u256 <= u256( uint64_t( std::numeric_limits<int64_t>::max() ) ) );
    uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
-   if( is_comment_payout_dust( ctx.current_steem_price, payout ) )
-      payout = 0;
+
+   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+      if( steem_payout <  STEEMIT_MIN_PAYOUT_STEEM) {
+         payout = 0;
+      }
+
+   } else {
+      if( is_comment_payout_dust( ctx.current_steem_price, payout ) ) {
+         payout = 0;
+      }
+   }
 
    asset max_steem = to_steem( ctx.current_steem_price, ctx.max_sbd );
 
