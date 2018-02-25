@@ -3029,22 +3029,29 @@ void database::update_virtual_supply()
 { try {
    modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& dgp )
    {
-      dgp.virtual_supply = dgp.current_supply
-         + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
-
-      auto median_price = get_feed_history().current_median_history;
-
-      if( !median_price.is_null() && has_hardfork( STEEMIT_HARDFORK_0_14__230 ) )
+      if( has_hardfork( STEEMIT_HARDFORK_0_21) )
       {
-         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
-            / dgp.virtual_supply.amount.value ).to_uint64() );
+         dgp.virtual_supply = dgp.current_supply;
+         dgp.sbd_print_rate = 0;
+      } else {
+         dgp.virtual_supply = dgp.current_supply
+                              + (get_feed_history().current_median_history.is_null() ? asset(0, STEEM_SYMBOL) :
+                                 dgp.current_sbd_supply * get_feed_history().current_median_history);
 
-         if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
-            dgp.sbd_print_rate = STEEMIT_100_PERCENT;
-         else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
-            dgp.sbd_print_rate = 0;
-         else
-            dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
+         auto median_price = get_feed_history().current_median_history;
+
+         if( !median_price.is_null() && has_hardfork( STEEMIT_HARDFORK_0_14__230 ) )
+         {
+            auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
+                                           / dgp.virtual_supply.amount.value ).to_uint64() );
+
+            if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
+               dgp.sbd_print_rate = STEEMIT_100_PERCENT;
+            else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
+               dgp.sbd_print_rate = 0;
+            else
+               dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
+         }
       }
    });
 } FC_CAPTURE_AND_RETHROW() }
