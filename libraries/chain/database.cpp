@@ -2437,10 +2437,10 @@ void database::init_genesis( uint64_t init_supply, uint64_t init_supply_srd )
 
          p.current_sbd_supply = asset( init_supply_srd, SBD_SYMBOL );
 
-         // p.virtual_supply = p.current_supply;
+          p.virtual_supply = p.current_supply;
          // virtual_supply = steem_supply + sbd_supply * price_feed
          // there is no price_feed at genesis, make it 1 ( 1serey = 1srd
-         p.virtual_supply = p.current_supply + asset( init_supply_srd, STEEM_SYMBOL );
+//         p.virtual_supply = p.current_supply + asset( init_supply_srd, STEEM_SYMBOL );
 
          p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
       } );
