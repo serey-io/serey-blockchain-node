@@ -442,7 +442,7 @@ struct comment_options_extension_visitor
 
 void comment_options_evaluator::do_apply( const comment_options_operation& o )
 {
-   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
    {
        if (o.percent_steem_dollars > 0) {
            FC_ASSERT( false, "comment_options_operation.percent_steem_dollars must be 0 since hardfork 21" );
@@ -874,9 +874,9 @@ void escrow_release_evaluator::do_apply( const escrow_release_operation& o )
 
 void transfer_evaluator::do_apply( const transfer_operation& o )
 {
-   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
    {
-      if (o.amount.symbol_name() == SBD_SYMBOL) {
+      if (o.amount.symbol == SBD_SYMBOL) {
          FC_ASSERT( false, "SRD disabled since hardfork 21" );
       }
    }
@@ -1773,7 +1773,7 @@ void feed_publish_evaluator::do_apply( const feed_publish_operation& o )
 
 void convert_evaluator::do_apply( const convert_operation& o )
 {
-  if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+  if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
   {
      FC_ASSERT( false, "convert_operation disabled since hardfork 21" );
   }
@@ -1802,7 +1802,7 @@ void convert_evaluator::do_apply( const convert_operation& o )
 
 void limit_order_create_evaluator::do_apply( const limit_order_create_operation& o )
 {
-   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
    {
       FC_ASSERT( false, "limit_order_create_operation disabled since hardfork 21" );
    }
@@ -1832,7 +1832,7 @@ void limit_order_create_evaluator::do_apply( const limit_order_create_operation&
 
 void limit_order_create2_evaluator::do_apply( const limit_order_create2_operation& o )
 {
-   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
    {
       FC_ASSERT( false, "limit_order_create2_operation disabled since hardfork 21" );
    }
@@ -2049,7 +2049,7 @@ void change_recovery_account_evaluator::do_apply( const change_recovery_account_
 
 void transfer_to_savings_evaluator::do_apply( const transfer_to_savings_operation& op )
 {
-   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
    {
       FC_ASSERT( false, "transfer_to_savings_operation since hardfork 21" );
    }

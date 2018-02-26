@@ -1533,7 +1533,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             ctx.content_constant = rf.content_constant;
          }
 
-         const share_type reward = util::get_rshare_reward( ctx );
+         const share_type reward = util::get_rshare_reward( ctx, has_hardfork( STEEMIT_HARDFORK_0_21) );
          uint128_t reward_tokens = uint128_t( reward.value );
 
          if( reward_tokens > 0 )

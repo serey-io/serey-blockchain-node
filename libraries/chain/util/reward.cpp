@@ -1,6 +1,7 @@
 
 #include <steemit/chain/util/reward.hpp>
 #include <steemit/chain/util/uint256.hpp>
+#include <steemit/chain/database.hpp>
 
 namespace steemit { namespace chain { namespace util {
 
@@ -35,7 +36,7 @@ uint64_t approx_sqrt( const uint128_t& x )
    return result;
 }
 
-uint64_t get_rshare_reward( const comment_reward_context& ctx )
+uint64_t get_rshare_reward( const comment_reward_context& ctx, bool has_hardfork_0_21 )
 {
    try
    {
@@ -54,13 +55,12 @@ uint64_t get_rshare_reward( const comment_reward_context& ctx )
    FC_ASSERT( payout_u256 <= u256( uint64_t( std::numeric_limits<int64_t>::max() ) ) );
    uint64_t payout = static_cast< uint64_t >( payout_u256 );
 
-
-   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   if (has_hardfork_0_21)
+   //if( _db.has_hardfork( STEEMIT_HARDFORK_0_21) )
    {
-      if( steem_payout <  STEEMIT_MIN_PAYOUT_STEEM) {
+      if( payout < STEEMIT_MIN_PAYOUT_STEEM) {
          payout = 0;
       }
-
    } else {
       if( is_comment_payout_dust( ctx.current_steem_price, payout ) ) {
          payout = 0;
