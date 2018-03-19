@@ -1533,7 +1533,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             ctx.content_constant = rf.content_constant;
          }
 
-         const share_type reward = util::get_rshare_reward( ctx );
+         const share_type reward = util::get_rshare_reward( ctx, has_hardfork( STEEMIT_HARDFORK_0_21) );
          uint128_t reward_tokens = uint128_t( reward.value );
 
          if( reward_tokens > 0 )
@@ -1556,6 +1556,12 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             author_tokens -= total_beneficiary;
 
             auto sbd_steem     = ( author_tokens * comment.percent_steem_dollars ) / ( 2 * STEEMIT_100_PERCENT ) ;
+
+            if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+            {
+               sbd_steem = 0;
+            }
+
             auto vesting_steem = author_tokens - sbd_steem;
 
             const auto& author = get_account( comment.author );
@@ -2775,69 +2781,71 @@ void database::process_header_extensions( const signed_block& next_block )
 
 void database::update_median_feed() {
 try {
-   if( (head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0 )
+   if( has_hardfork( STEEMIT_HARDFORK_0_21) )
+   {
+      modify(get_feed_history(), [&](feed_history_object &fho) {
+          if (fho.price_history.size() > 0) {
+             fho.price_history.clear();
+          }
+      });
+      return;
+   }
+
+   if ((head_block_num() % STEEMIT_FEED_INTERVAL_BLOCKS) != 0)
       return;
 
    auto now = head_block_time();
-   const witness_schedule_object& wso = get_witness_schedule_object();
-   vector<price> feeds; feeds.reserve( wso.num_scheduled_witnesses );
-   for( int i = 0; i < wso.num_scheduled_witnesses; i++ )
-   {
-      const auto& wit = get_witness( wso.current_shuffled_witnesses[i] );
-      if( has_hardfork( STEEMIT_HARDFORK_0_19__822 ) )
-      {
-         if( now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE_SECONDS
-            && !wit.sbd_exchange_rate.is_null() )
-         {
-            feeds.push_back( wit.sbd_exchange_rate );
+   const witness_schedule_object &wso = get_witness_schedule_object();
+   vector<price> feeds;
+   feeds.reserve(wso.num_scheduled_witnesses);
+   for (int i = 0; i < wso.num_scheduled_witnesses; i++) {
+      const auto &wit = get_witness(wso.current_shuffled_witnesses[i]);
+      if (has_hardfork(STEEMIT_HARDFORK_0_19__822)) {
+         if (now < wit.last_sbd_exchange_update + STEEMIT_MAX_FEED_AGE_SECONDS
+             && !wit.sbd_exchange_rate.is_null()) {
+            feeds.push_back(wit.sbd_exchange_rate);
          }
-      }
-      else if( wit.last_sbd_exchange_update < now + STEEMIT_MAX_FEED_AGE_SECONDS &&
-          !wit.sbd_exchange_rate.is_null() )
-      {
-         feeds.push_back( wit.sbd_exchange_rate );
+      } else if (wit.last_sbd_exchange_update < now + STEEMIT_MAX_FEED_AGE_SECONDS &&
+                 !wit.sbd_exchange_rate.is_null()) {
+         feeds.push_back(wit.sbd_exchange_rate);
       }
    }
 
-   if( feeds.size() >= STEEMIT_MIN_FEEDS )
-   {
-      std::sort( feeds.begin(), feeds.end() );
-      auto median_feed = feeds[feeds.size()/2];
+   if (feeds.size() >= STEEMIT_MIN_FEEDS) {
+      std::sort(feeds.begin(), feeds.end());
+      auto median_feed = feeds[feeds.size() / 2];
 
-      modify( get_feed_history(), [&]( feed_history_object& fho )
-      {
-         fho.price_history.push_back( median_feed );
-         size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16;
-         if( has_hardfork( STEEMIT_HARDFORK_0_16__551) )
-            steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
+      modify(get_feed_history(), [&](feed_history_object &fho) {
+          fho.price_history.push_back(median_feed);
+          size_t steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW_PRE_HF_16;
+          if (has_hardfork(STEEMIT_HARDFORK_0_16__551))
+             steemit_feed_history_window = STEEMIT_FEED_HISTORY_WINDOW;
 
-         if( fho.price_history.size() > steemit_feed_history_window )
-            fho.price_history.pop_front();
+          if (fho.price_history.size() > steemit_feed_history_window)
+             fho.price_history.pop_front();
 
-         if( fho.price_history.size() )
-         {
-            std::deque< price > copy;
-            for( auto i : fho.price_history )
-            {
-               copy.push_back( i );
-            }
+          if (fho.price_history.size()) {
+             std::deque<price> copy;
+             for (auto i : fho.price_history) {
+                copy.push_back(i);
+             }
 
-            std::sort( copy.begin(), copy.end() ); /// TODO: use nth_item
-            fho.current_median_history = copy[copy.size()/2];
+             std::sort(copy.begin(), copy.end()); /// TODO: use nth_item
+             fho.current_median_history = copy[copy.size() / 2];
 
 #ifdef IS_TEST_NET
-            if( skip_price_feed_limit_check )
-               return;
+                if( skip_price_feed_limit_check )
+                   return;
 #endif
-            if( has_hardfork( STEEMIT_HARDFORK_0_14__230 ) )
-            {
-               const auto& gpo = get_dynamic_global_properties();
-               price min_price( asset( 9 * gpo.current_sbd_supply.amount, SBD_SYMBOL ), gpo.current_supply ); // This price limits SBD to 10% market cap
+             if (has_hardfork(STEEMIT_HARDFORK_0_14__230)) {
+                const auto &gpo = get_dynamic_global_properties();
+                price min_price(asset(9 * gpo.current_sbd_supply.amount, SBD_SYMBOL),
+                                gpo.current_supply); // This price limits SBD to 10% market cap
 
-               if( min_price > fho.current_median_history )
-                  fho.current_median_history = min_price;
-            }
-         }
+                if (min_price > fho.current_median_history)
+                   fho.current_median_history = min_price;
+             }
+          }
       });
    }
 } FC_CAPTURE_AND_RETHROW() }
@@ -3029,22 +3037,29 @@ void database::update_virtual_supply()
 { try {
    modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& dgp )
    {
-      dgp.virtual_supply = dgp.current_supply
-         + ( get_feed_history().current_median_history.is_null() ? asset( 0, STEEM_SYMBOL ) : dgp.current_sbd_supply * get_feed_history().current_median_history );
-
-      auto median_price = get_feed_history().current_median_history;
-
-      if( !median_price.is_null() && has_hardfork( STEEMIT_HARDFORK_0_14__230 ) )
+      if( has_hardfork( STEEMIT_HARDFORK_0_21) )
       {
-         auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
-            / dgp.virtual_supply.amount.value ).to_uint64() );
+         dgp.virtual_supply = dgp.current_supply;
+         dgp.sbd_print_rate = 0;
+      } else {
+         dgp.virtual_supply = dgp.current_supply
+                              + (get_feed_history().current_median_history.is_null() ? asset(0, STEEM_SYMBOL) :
+                                 dgp.current_sbd_supply * get_feed_history().current_median_history);
 
-         if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
-            dgp.sbd_print_rate = STEEMIT_100_PERCENT;
-         else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
-            dgp.sbd_print_rate = 0;
-         else
-            dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
+         auto median_price = get_feed_history().current_median_history;
+
+         if( !median_price.is_null() && has_hardfork( STEEMIT_HARDFORK_0_14__230 ) )
+         {
+            auto percent_sbd = uint16_t( ( ( fc::uint128_t( ( dgp.current_sbd_supply * get_feed_history().current_median_history ).amount.value ) * STEEMIT_100_PERCENT )
+                                           / dgp.virtual_supply.amount.value ).to_uint64() );
+
+            if( percent_sbd <= STEEMIT_SBD_START_PERCENT )
+               dgp.sbd_print_rate = STEEMIT_100_PERCENT;
+            else if( percent_sbd >= STEEMIT_SBD_STOP_PERCENT )
+               dgp.sbd_print_rate = 0;
+            else
+               dgp.sbd_print_rate = ( ( STEEMIT_SBD_STOP_PERCENT - percent_sbd ) * STEEMIT_100_PERCENT ) / ( STEEMIT_SBD_STOP_PERCENT - STEEMIT_SBD_START_PERCENT );
+         }
       }
    });
 } FC_CAPTURE_AND_RETHROW() }
@@ -3582,6 +3597,9 @@ void database::init_hardforks()
    FC_ASSERT( STEEMIT_HARDFORK_0_20 == 20, "Invalid hardfork configuration" );
    _hardfork_times[ STEEMIT_HARDFORK_0_20 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_20_TIME );
    _hardfork_versions[ STEEMIT_HARDFORK_0_20 ] = STEEMIT_HARDFORK_0_20_VERSION;
+   FC_ASSERT( STEEMIT_HARDFORK_0_21 == 21, "Invalid hardfork configuration" );
+   _hardfork_times[ STEEMIT_HARDFORK_0_21 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_21_TIME );
+   _hardfork_versions[ STEEMIT_HARDFORK_0_21 ] = STEEMIT_HARDFORK_0_21_VERSION;
 
    const auto& hardforks = get_hardfork_property_object();
    FC_ASSERT( hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS",STEEMIT_NUM_HARDFORKS) );
@@ -3906,13 +3924,14 @@ void database::apply_hardfork( uint32_t hardfork )
          break;
       case STEEMIT_HARDFORK_0_20:
          {
-            // TODO: inflation rate, promotion, and SRD
-
-
-
-
          }
          break;
+      case STEEMIT_HARDFORK_0_21:
+      {
+         // TODO: promotion, and SRD
+
+      }
+           break;
       default:
          break;
    }
@@ -4059,10 +4078,15 @@ void database::validate_invariants()const
       FC_ASSERT( gpo.pending_rewarded_vesting_steem == pending_vesting_steem, "", ("pending_rewarded_vesting_steem",gpo.pending_rewarded_vesting_steem)("pending_vesting_steem", pending_vesting_steem));
 
       FC_ASSERT( gpo.virtual_supply >= gpo.current_supply );
-      if ( !get_feed_history().current_median_history.is_null() )
+      if( has_hardfork( STEEMIT_HARDFORK_0_21) )
       {
-         FC_ASSERT( gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply
-            == gpo.virtual_supply, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("get_feed_history().current_median_history",get_feed_history().current_median_history)("gpo.current_supply",gpo.current_supply)("gpo.virtual_supply",gpo.virtual_supply) );
+        // do nothing
+      } else {
+          if ( !get_feed_history().current_median_history.is_null() )
+          {
+             FC_ASSERT( gpo.current_sbd_supply * get_feed_history().current_median_history + gpo.current_supply
+                == gpo.virtual_supply, "", ("gpo.current_sbd_supply",gpo.current_sbd_supply)("get_feed_history().current_median_history",get_feed_history().current_median_history)("gpo.current_supply",gpo.current_supply)("gpo.virtual_supply",gpo.virtual_supply) );
+          }
       }
    }
    FC_CAPTURE_LOG_AND_RETHROW( (head_block_num()) );
