@@ -1557,25 +1557,28 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             }
 
             author_tokens -= total_beneficiary;
-
-            auto sbd_steem     = ( author_tokens * comment.percent_steem_dollars ) / ( 2 * STEEMIT_100_PERCENT ) ;
+            const auto& author = get_account( comment.author );
 
             if( has_hardfork( STEEMIT_HARDFORK_0_21) )
             {
-               sbd_steem = 0;
+               auto vest_created = create_vesting( author, author_tokens, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
+
+               elog( "adjust_total_payout: author_tokens=${author_tokens} curation_tokens=${curation_tokens}", ("author_tokens", author_tokens)("curation_tokens", curation_tokens) );
+               adjust_total_payout( comment, asset( author_tokens, STEEM_SYMBOL ), asset( curation_tokens, STEEM_SYMBOL ), asset( total_beneficiary, STEEM_SYMBOL ) );
+
+               push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, SBD_SYMBOL ), asset( 0, STEEM_SYMBOL ), vest_created ) );
+               push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, STEEM_SYMBOL ) ) );
+            } else {
+               auto sbd_steem     = ( author_tokens * comment.percent_steem_dollars ) / ( 2 * STEEMIT_100_PERCENT ) ;
+               auto vesting_steem = author_tokens - sbd_steem;
+               auto vest_created = create_vesting( author, vesting_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
+               auto sbd_payout = create_sbd( author, sbd_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
+
+               adjust_total_payout( comment, sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ), asset( curation_tokens, STEEM_SYMBOL ), asset( total_beneficiary, STEEM_SYMBOL ) );
+
+               push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, SBD_SYMBOL ), asset( 0, STEEM_SYMBOL ), vest_created ) );
+               push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, STEEM_SYMBOL ) ) );
             }
-
-            auto vesting_steem = author_tokens - sbd_steem;
-
-            const auto& author = get_account( comment.author );
-            auto vest_created = create_vesting( author, vesting_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
-            auto sbd_payout = create_sbd( author, sbd_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
-
-            //adjust_total_payout( comment, sbd_payout.first + to_sbd( sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ) ), to_sbd( asset( curation_tokens, STEEM_SYMBOL ) ), to_sbd( asset( total_beneficiary, STEEM_SYMBOL ) ) );
-            adjust_total_payout( comment, sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ), asset( curation_tokens, STEEM_SYMBOL ), asset( total_beneficiary, STEEM_SYMBOL ) );
-
-            push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), sbd_payout.first, sbd_payout.second, vest_created ) );
-            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, STEEM_SYMBOL ) ) );
 
             #ifndef IS_LOW_MEM
                modify( comment, [&]( comment_object& c )
@@ -3827,7 +3830,7 @@ void database::apply_hardfork( uint32_t hardfork )
                rfo.percent_content_rewards = STEEMIT_100_PERCENT;
                rfo.reward_balance = gpo.total_reward_fund_steem;
 #ifndef IS_TEST_NET
-               rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
+//               rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
 #endif
                rfo.author_reward_curve = curve_id::quadratic;
                rfo.curation_reward_curve = curve_id::quadratic_curation;
@@ -3901,7 +3904,7 @@ void database::apply_hardfork( uint32_t hardfork )
             modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
             {
 #ifndef IS_TEST_NET
-               rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
+//               rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
 #endif
                rfo.author_reward_curve = curve_id::linear;
                rfo.curation_reward_curve = curve_id::square_root;
@@ -3928,11 +3931,26 @@ void database::apply_hardfork( uint32_t hardfork )
          break;
       case STEEMIT_HARDFORK_0_20:
          {
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // reset post reward balance to zero
+
+            asset reward_balance = asset( 0, STEEM_SYMBOL );
+
+            modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
+            {
+                reward_balance.amount = rfo.reward_balance.amount;
+                rfo.reward_balance = asset( 0, STEEM_SYMBOL );
+            });
+
+            modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
+            {
+                gpo.current_supply -= reward_balance;
+            });
          }
          break;
       case STEEMIT_HARDFORK_0_21:
       {
-         // TODO: promotion, and SRD
+         // TODO: promotion
 
       }
            break;

@@ -456,12 +456,14 @@ void comment_options_evaluator::do_apply( const comment_options_operation& o )
    }
 
    const auto& comment = _db.get_comment( o.author, o.permlink );
-   if( !o.allow_curation_rewards || !o.allow_votes || o.max_accepted_payout < comment.max_accepted_payout )
+
+   // because SBD is disable, so we dont care ASSET type is SEREY or SRD, compare the amount only.
+   if( !o.allow_curation_rewards || !o.allow_votes || o.max_accepted_payout.amount < comment.max_accepted_payout.amount )
       FC_ASSERT( comment.abs_rshares == 0, "One of the included comment options requires the comment to have no rshares allocated to it." );
 
    FC_ASSERT( comment.allow_curation_rewards >= o.allow_curation_rewards, "Curation rewards cannot be re-enabled." );
    FC_ASSERT( comment.allow_votes >= o.allow_votes, "Voting cannot be re-enabled." );
-   FC_ASSERT( comment.max_accepted_payout >= o.max_accepted_payout, "A comment cannot accept a greater payout." );
+   FC_ASSERT( comment.max_accepted_payout.amount.value >= o.max_accepted_payout.amount.value, "A comment cannot accept a greater payout." );
    FC_ASSERT( comment.percent_steem_dollars >= o.percent_steem_dollars, "A comment cannot accept a greater percent SBD." );
 
    _db.modify( comment, [&]( comment_object& c ) {
@@ -900,12 +902,24 @@ void transfer_evaluator::do_apply( const transfer_operation& o )
 
 void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operation& o )
 {
+   transfer_to_vesting_operation oo;
+   oo.from = o.from;
+   oo.to = o.to;
+   oo.amount = o.amount;
+
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = o.to.size() ? _db.get_account(o.to) : from_account;
 
-   FC_ASSERT( _db.get_balance( from_account, STEEM_SYMBOL) >= o.amount, "Account does not have sufficient STEEM for transfer." );
-   _db.adjust_balance( from_account, -o.amount );
-   _db.create_vesting( to_account, o.amount );
+   // TODO: maybe HF22
+   if( _db.get_balance( from_account, STEEM_SYMBOL) < oo.amount)
+   {
+      oo.amount =_db.get_balance( from_account, STEEM_SYMBOL);
+   }
+
+   FC_ASSERT( _db.get_balance( from_account, STEEM_SYMBOL) >= oo.amount, "Account does not have sufficient STEEM for transfer." );
+
+   _db.adjust_balance( from_account, -oo.amount );
+   _db.create_vesting( to_account, oo.amount );
 }
 
 void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
