@@ -1575,7 +1575,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
             adjust_total_payout( comment, sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ), asset( curation_tokens, STEEM_SYMBOL ), asset( total_beneficiary, STEEM_SYMBOL ) );
 
             push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), sbd_payout.first, sbd_payout.second, vest_created ) );
-            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), to_sbd( asset( claimed_reward, STEEM_SYMBOL ) ) ) );
+            push_virtual_operation( comment_reward_operation( comment.author, to_string( comment.permlink ), asset( claimed_reward, STEEM_SYMBOL ) ) );
 
             #ifndef IS_LOW_MEM
                modify( comment, [&]( comment_object& c )
