@@ -23,7 +23,7 @@ struct comment_reward_context
 {
    share_type rshares;
    uint16_t   reward_weight = 0;
-   asset      max_sbd;
+   asset      max_sbd; // max_steem instead of sbd because sbd is disabled
    uint128_t  total_reward_shares2;
    asset      total_reward_fund_steem;
    price      current_steem_price;
