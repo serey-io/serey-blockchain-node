@@ -456,12 +456,14 @@ void comment_options_evaluator::do_apply( const comment_options_operation& o )
    }
 
    const auto& comment = _db.get_comment( o.author, o.permlink );
-   if( !o.allow_curation_rewards || !o.allow_votes || o.max_accepted_payout < comment.max_accepted_payout )
+
+   // because SBD is disable, so we dont care ASSET type is SEREY or SRD, compare the amount only.
+   if( !o.allow_curation_rewards || !o.allow_votes || o.max_accepted_payout.amount < comment.max_accepted_payout.amount )
       FC_ASSERT( comment.abs_rshares == 0, "One of the included comment options requires the comment to have no rshares allocated to it." );
 
    FC_ASSERT( comment.allow_curation_rewards >= o.allow_curation_rewards, "Curation rewards cannot be re-enabled." );
    FC_ASSERT( comment.allow_votes >= o.allow_votes, "Voting cannot be re-enabled." );
-   FC_ASSERT( comment.max_accepted_payout >= o.max_accepted_payout, "A comment cannot accept a greater payout." );
+   FC_ASSERT( comment.max_accepted_payout.amount.value >= o.max_accepted_payout.amount.value, "A comment cannot accept a greater payout." );
    FC_ASSERT( comment.percent_steem_dollars >= o.percent_steem_dollars, "A comment cannot accept a greater percent SBD." );
 
    _db.modify( comment, [&]( comment_object& c ) {
