@@ -902,12 +902,24 @@ void transfer_evaluator::do_apply( const transfer_operation& o )
 
 void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operation& o )
 {
+   transfer_to_vesting_operation oo;
+   oo.from = o.from;
+   oo.to = o.to;
+   oo.amount = o.amount;
+
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = o.to.size() ? _db.get_account(o.to) : from_account;
 
-   FC_ASSERT( _db.get_balance( from_account, STEEM_SYMBOL) >= o.amount, "Account does not have sufficient STEEM for transfer." );
-   _db.adjust_balance( from_account, -o.amount );
-   _db.create_vesting( to_account, o.amount );
+   // TODO: maybe HF22
+   if( _db.get_balance( from_account, STEEM_SYMBOL) < oo.amount)
+   {
+      oo.amount =_db.get_balance( from_account, STEEM_SYMBOL);
+   }
+
+   FC_ASSERT( _db.get_balance( from_account, STEEM_SYMBOL) >= oo.amount, "Account does not have sufficient STEEM for transfer." );
+
+   _db.adjust_balance( from_account, -oo.amount );
+   _db.create_vesting( to_account, oo.amount );
 }
 
 void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
