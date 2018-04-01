@@ -1681,12 +1681,20 @@ void database::process_comment_cashout()
          fc::microseconds decay_rate;
 
          if( has_hardfork( STEEMIT_HARDFORK_0_19__1051 ) ) {
-//            decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19;
-            decay_rate = fc::days(365+15);
+            decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19;
+//            decay_rate = fc::days(15*10);
          } else {
             decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF17;
          }
-         rfo.recent_claims -= ( rfo.recent_claims * ( head_block_time() - rfo.last_update ).to_seconds() ) / decay_rate.to_seconds();
+
+         // recent_claims never be zero, but make sure it wont happen for any reason
+         int64_t dif_seconds = 0;
+         if (head_block_time() > rfo.last_update) {
+            dif_seconds = ( head_block_time() - rfo.last_update ).to_seconds();
+         }
+
+         rfo.recent_claims -= ( rfo.recent_claims * dif_seconds ) / decay_rate.to_seconds();
+
          rfo.last_update = head_block_time();
       });
 
@@ -3834,7 +3842,7 @@ void database::apply_hardfork( uint32_t hardfork )
                rfo.percent_content_rewards = STEEMIT_100_PERCENT;
                rfo.reward_balance = gpo.total_reward_fund_steem;
 #ifndef IS_TEST_NET
-               rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
+//               rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
 #endif
                rfo.author_reward_curve = curve_id::quadratic;
                rfo.curation_reward_curve = curve_id::quadratic_curation;
@@ -3910,7 +3918,7 @@ void database::apply_hardfork( uint32_t hardfork )
             modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
             {
 #ifndef IS_TEST_NET
-               rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
+//               rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
 #endif
                rfo.author_reward_curve = curve_id::linear;
                rfo.curation_reward_curve = curve_id::square_root;
