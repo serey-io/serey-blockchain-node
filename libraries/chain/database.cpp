@@ -3842,7 +3842,7 @@ void database::apply_hardfork( uint32_t hardfork )
                rfo.percent_content_rewards = STEEMIT_100_PERCENT;
                rfo.reward_balance = gpo.total_reward_fund_steem;
 #ifndef IS_TEST_NET
-//               rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
+               rfo.recent_claims = STEEMIT_HF_17_RECENT_CLAIMS;
 #endif
                rfo.author_reward_curve = curve_id::quadratic;
                rfo.curation_reward_curve = curve_id::quadratic_curation;
@@ -3918,7 +3918,7 @@ void database::apply_hardfork( uint32_t hardfork )
             modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
             {
 #ifndef IS_TEST_NET
-//               rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
+               rfo.recent_claims = STEEMIT_HF_19_RECENT_CLAIMS;
 #endif
                rfo.author_reward_curve = curve_id::linear;
                rfo.curation_reward_curve = curve_id::square_root;
