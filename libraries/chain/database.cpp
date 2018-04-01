@@ -1558,12 +1558,13 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
 
             author_tokens -= total_beneficiary;
             const auto& author = get_account( comment.author );
+            const reward_fund_object &rfo = get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
 
             if( has_hardfork( STEEMIT_HARDFORK_0_21) )
             {
                auto vest_created = create_vesting( author, author_tokens, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
 
-               elog( "adjust_total_payout: author_tokens=${author_tokens} curation_tokens=${curation_tokens}", ("author_tokens", author_tokens)("curation_tokens", curation_tokens) );
+               elog( "adjust_total_payout: author_tokens=${author_tokens} recent_claims=${recent_claims} reward_balance=${reward_balance}", ("author_tokens", author_tokens)("recent_claims", rfo.recent_claims)("reward_balance", rfo.reward_balance) );
                adjust_total_payout( comment, asset( author_tokens, STEEM_SYMBOL ), asset( curation_tokens, STEEM_SYMBOL ), asset( total_beneficiary, STEEM_SYMBOL ) );
 
                push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, SBD_SYMBOL ), asset( 0, STEEM_SYMBOL ), vest_created ) );
@@ -1574,6 +1575,7 @@ share_type database::cashout_comment_helper( util::comment_reward_context& ctx, 
                auto vest_created = create_vesting( author, vesting_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
                auto sbd_payout = create_sbd( author, sbd_steem, has_hardfork( STEEMIT_HARDFORK_0_17__659 ) );
 
+               elog( "adjust_total_payout: author_tokens=${author_tokens} recent_claims=${recent_claims} reward_balance=${reward_balance}", ("author_tokens", author_tokens)("recent_claims", rfo.recent_claims)("reward_balance", rfo.reward_balance) );
                adjust_total_payout( comment, sbd_payout.second + asset( vesting_steem, STEEM_SYMBOL ), asset( curation_tokens, STEEM_SYMBOL ), asset( total_beneficiary, STEEM_SYMBOL ) );
 
                push_virtual_operation( author_reward_operation( comment.author, to_string( comment.permlink ), asset( 0, SBD_SYMBOL ), asset( 0, STEEM_SYMBOL ), vest_created ) );
@@ -1678,12 +1680,21 @@ void database::process_comment_cashout()
       {
          fc::microseconds decay_rate;
 
-         if( has_hardfork( STEEMIT_HARDFORK_0_19__1051 ) )
+         if( has_hardfork( STEEMIT_HARDFORK_0_19__1051 ) ) {
             decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF19;
-         else
+//            decay_rate = fc::days(15*10);
+         } else {
             decay_rate = STEEMIT_RECENT_RSHARES_DECAY_RATE_HF17;
+         }
 
-         rfo.recent_claims -= ( rfo.recent_claims * ( head_block_time() - rfo.last_update ).to_seconds() ) / decay_rate.to_seconds();
+         // recent_claims never be zero, but make sure it wont happen for any reason
+         int64_t dif_seconds = 0;
+         if (head_block_time() > rfo.last_update) {
+            dif_seconds = ( head_block_time() - rfo.last_update ).to_seconds();
+         }
+
+         rfo.recent_claims -= ( rfo.recent_claims * dif_seconds ) / decay_rate.to_seconds();
+
          rfo.last_update = head_block_time();
       });
 
@@ -3718,20 +3729,20 @@ void database::apply_hardfork( uint32_t hardfork )
          break;
       case STEEMIT_HARDFORK_0_9:
          {
-            for( const std::string& acc : hardfork9::get_compromised_accounts() )
-            {
-               const account_object* account = find_account( acc );
-               if( account == nullptr )
-                  continue;
-
-               update_owner_authority( *account, authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 ) );
-
-               modify( get< account_authority_object, by_account >( account->name ), [&]( account_authority_object& auth )
-               {
-                  auth.active  = authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 );
-                  auth.posting = authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 );
-               });
-            }
+//            for( const std::string& acc : hardfork9::get_compromised_accounts() )
+//            {
+//               const account_object* account = find_account( acc );
+//               if( account == nullptr )
+//                  continue;
+//
+//               update_owner_authority( *account, authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 ) );
+//
+//               modify( get< account_authority_object, by_account >( account->name ), [&]( account_authority_object& auth )
+//               {
+//                  auth.active  = authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 );
+//                  auth.posting = authority( 1, public_key_type( "STM7sw22HqsXbz7D2CmJfmMwt9rimtk518dRzsR1f8Cgw52dQR1pR" ), 1 );
+//               });
+//            }
          }
          break;
       case STEEMIT_HARDFORK_0_10:
@@ -3820,6 +3831,7 @@ void database::apply_hardfork( uint32_t hardfork )
             });
 
             const auto& gpo = get_dynamic_global_properties();
+            elog("dynamic_global_property_object: =${gpo}", ("gpo", gpo));
 
             auto post_rf = create< reward_fund_object >( [&]( reward_fund_object& rfo )
             {
@@ -3835,6 +3847,8 @@ void database::apply_hardfork( uint32_t hardfork )
                rfo.author_reward_curve = curve_id::quadratic;
                rfo.curation_reward_curve = curve_id::quadratic_curation;
             });
+
+            elog("reward_fund_object: =${rfo}", ("rfo", post_rf));
 
             // As a shortcut in payout processing, we use the id as an array index.
             // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
@@ -3931,29 +3945,46 @@ void database::apply_hardfork( uint32_t hardfork )
          break;
       case STEEMIT_HARDFORK_0_20:
          {
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////
-            // reset post reward balance to zero
+            const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+            elog("dynamic_global_property_object: =${dpo}", ("dpo", dpo));
 
-            asset reward_balance = asset( 0, STEEM_SYMBOL );
-
-            modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
-            {
-                reward_balance.amount = rfo.reward_balance.amount;
-                rfo.reward_balance = asset( 0, STEEM_SYMBOL );
-            });
-
-            modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
-            {
-                gpo.current_supply -= reward_balance;
-            });
+            const reward_fund_object &rfo = get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
+            elog("reward_fund_object: =${rfo}", ("rfo", rfo));
          }
          break;
       case STEEMIT_HARDFORK_0_21:
-      {
-         // TODO: promotion
+         {
+            const dynamic_global_property_object &dpo = get_dynamic_global_properties();
+            elog("dynamic_global_property_object: =${dpo}", ("dpo", dpo));
 
-      }
-           break;
+            const reward_fund_object &rfo = get<reward_fund_object, by_name>(STEEMIT_POST_REWARD_FUND_NAME);
+            elog("reward_fund_object: =${rfo}", ("rfo", rfo));
+
+            //////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // reset post reward balance to zero
+
+//            asset reward_balance = asset( 0, STEEM_SYMBOL );
+
+//            modify( get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME ), [&]( reward_fund_object &rfo )
+//            {
+//                reward_balance.amount = rfo.reward_balance.amount;
+//                rfo.reward_balance = asset( 0, STEEM_SYMBOL );
+//            });
+
+//            modify( get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
+//            {
+//                gpo.current_supply -= reward_balance;
+//                gpo.current_sbd_supply = asset( 0, SBD_SYMBOL );
+//                gpo.virtual_supply = gpo.current_supply;
+//                gpo.pending_rewarded_vesting_shares = asset( 0, VESTS_SYMBOL );
+//                gpo.pending_rewarded_vesting_steem = asset( 0, STEEM_SYMBOL );
+//                gpo.total_reward_fund_steem = asset( 0, STEEM_SYMBOL );
+//                gpo.total_reward_shares2 = 0;
+//                gpo.sbd_interest_rate = 0;
+//                gpo.sbd_print_rate = 0;
+//            });
+         }
+         break;
       default:
          break;
    }
