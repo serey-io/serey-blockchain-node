@@ -924,10 +924,19 @@ void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operatio
 
 void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 {
-   const auto& account = _db.get_account( o.account );
+   withdraw_vesting_operation oo = o;
+
+   const auto& account = _db.get_account( oo.account );
 
    FC_ASSERT( account.vesting_shares >= asset( 0, VESTS_SYMBOL ), "Account does not have sufficient Steem Power for withdraw." );
-   FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares, "Account does not have sufficient Steem Power for withdraw." );
+
+   if (_db.head_block_time() < fc::time_point_sec(1522948989)) { // Fri Apr 06 2018 00:23:09 GMT+0700 (+07)
+      if (!(account.vesting_shares - account.delegated_vesting_shares >= oo.vesting_shares)) {
+         oo.vesting_shares = account.vesting_shares - account.delegated_vesting_shares;
+      }
+   }
+
+   FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= oo.vesting_shares, "Account does not have sufficient Steem Power for withdraw." );
 
    if( !account.mined && _db.has_hardfork( STEEMIT_HARDFORK_0_1 ) )
    {
@@ -941,7 +950,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
                  "Account registered by another account requires 10x account creation fee worth of Steem Power before it can be powered down." );
    }
 
-   if( o.vesting_shares.amount == 0 )
+   if( oo.vesting_shares.amount == 0 )
    {
       if( _db.has_hardfork( STEEMIT_HARDFORK_0_5__57 ) )
          FC_ASSERT( account.vesting_withdraw_rate.amount  != 0, "This operation would not change the vesting withdraw rate." );
@@ -961,7 +970,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 
       _db.modify( account, [&]( account_object& a )
       {
-         auto new_vesting_withdraw_rate = asset( o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL );
+         auto new_vesting_withdraw_rate = asset( oo.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL );
 
          if( new_vesting_withdraw_rate.amount == 0 )
             new_vesting_withdraw_rate.amount = 1;
@@ -971,7 +980,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 
          a.vesting_withdraw_rate = new_vesting_withdraw_rate;
          a.next_vesting_withdrawal = _db.head_block_time() + fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
-         a.to_withdraw = o.vesting_shares.amount;
+         a.to_withdraw = oo.vesting_shares.amount;
          a.withdrawn = 0;
       });
    }
