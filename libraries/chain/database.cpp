@@ -1807,10 +1807,16 @@ void database::process_funds()
    if( has_hardfork( STEEMIT_HARDFORK_0_16__551) )
    {
       int64_t current_inflation_rate = 0;
+      int64_t content_reward_percent = int64_t(STEEMIT_CONTENT_REWARD_PERCENT);
+      int64_t vesting_fund_percent = int64_t(STEEMIT_VESTING_FUND_PERCENT);
 
-      // inflation rate at fixed rated 9.53 ~ 10% anually
-      if( has_hardfork( STEEMIT_HARDFORK_0_20) )
-      {
+      if( has_hardfork( STEEMIT_HARDFORK_0_22) ) {
+         // inflation rate at fixed rated ~ 1.5% annually
+         current_inflation_rate = int64_t( 150 );
+         content_reward_percent = int64_t(STEEMIT_HF_22_CONTENT_REWARD_PERCENT);
+         vesting_fund_percent = int64_t(STEEMIT_HF_22_VESTING_FUND_PERCENT);
+      } else if( has_hardfork( STEEMIT_HARDFORK_0_20) ) {
+         // inflation rate at fixed rated 9.53 ~ 10% annually
          current_inflation_rate = int64_t( 953 );
       } else {
          /**
@@ -1826,10 +1832,10 @@ void database::process_funds()
       }
 
       auto new_steem = ( props.current_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
-      auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
+      auto content_reward = ( new_steem * content_reward_percent ) / STEEMIT_100_PERCENT;
       if( has_hardfork( STEEMIT_HARDFORK_0_17__774 ) )
          content_reward = pay_reward_funds( content_reward ); /// 75% to content creator
-      auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+      auto vesting_reward = ( new_steem * vesting_fund_percent ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
       auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
 
       const auto& cwit = get_witness( props.current_witness );
@@ -3618,6 +3624,9 @@ void database::init_hardforks()
    FC_ASSERT( STEEMIT_HARDFORK_0_21 == 21, "Invalid hardfork configuration" );
    _hardfork_times[ STEEMIT_HARDFORK_0_21 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_21_TIME );
    _hardfork_versions[ STEEMIT_HARDFORK_0_21 ] = STEEMIT_HARDFORK_0_21_VERSION;
+   FC_ASSERT( STEEMIT_HARDFORK_0_22 == 22, "Invalid hardfork configuration" );
+   _hardfork_times[ STEEMIT_HARDFORK_0_22 ] = fc::time_point_sec( STEEMIT_HARDFORK_0_22_TIME );
+   _hardfork_versions[ STEEMIT_HARDFORK_0_22 ] = STEEMIT_HARDFORK_0_22_VERSION;
 
    const auto& hardforks = get_hardfork_property_object();
    FC_ASSERT( hardforks.last_hardfork <= STEEMIT_NUM_HARDFORKS, "Chain knows of more hardforks than configuration", ("hardforks.last_hardfork",hardforks.last_hardfork)("STEEMIT_NUM_HARDFORKS",STEEMIT_NUM_HARDFORKS) );
@@ -3983,6 +3992,11 @@ void database::apply_hardfork( uint32_t hardfork )
 //                gpo.sbd_interest_rate = 0;
 //                gpo.sbd_print_rate = 0;
 //            });
+         }
+         break;
+      case STEEMIT_HARDFORK_0_22:
+         {
+
          }
          break;
       default:
