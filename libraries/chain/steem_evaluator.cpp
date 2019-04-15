@@ -115,8 +115,11 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
 
 void account_create_evaluator::do_apply( const account_create_operation& o )
 {
-   const auto& creator = _db.get_account( o.creator );
+  if (_db.head_block_num() >= 12967768) {
+    FC_ASSERT(o.creator == "serey", "only serey account can create new account.");
+  }
 
+   const auto& creator = _db.get_account( o.creator );
    const auto& props = _db.get_dynamic_global_properties();
 
    FC_ASSERT( creator.balance >= o.fee, "Insufficient balance to create account.", ( "creator.balance", creator.balance )( "required", o.fee ) );
@@ -192,6 +195,10 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
 
 void account_create_with_delegation_evaluator::do_apply( const account_create_with_delegation_operation& o )
 {
+   if (_db.head_block_num() >= 12967768) {
+     FC_ASSERT(o.creator == "serey", "only serey account can create new account.");
+   }
+
    FC_ASSERT( _db.has_hardfork( STEEMIT_HARDFORK_0_17__818 ), "Account creation with delegation is not enabled until hardfork 17" );
 
    const auto& creator = _db.get_account( o.creator );
