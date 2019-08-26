@@ -59,9 +59,6 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
-// Every 3-6 blocks, rebroadcast. Do this randomly to prevent simultaneous p2p spam.
-#define REBROADCAST_RAND_INTERVAL() 3 + ( rand() % 4 )
-
 namespace steemit { namespace app {
 using graphene::net::item_hash_t;
 using graphene::net::item_id;
@@ -86,8 +83,6 @@ namespace detail {
    class application_impl : public graphene::net::node_delegate
    {
    public:
-      uint32_t _next_rebroadcast = 0;
-      boost::signals2::connection _rebroadcast_con;
       fc::optional<fc::temp_file> _lock_file;
       bool _is_block_producer = false;
       bool _force_validate = false;
@@ -247,25 +242,6 @@ namespace detail {
          c->set_session_data( session );
       }
 
-      void rebroadcast_pending_tx()
-      {
-         uint32_t hbn = _chain_db->head_block_num();
-         if( (_next_rebroadcast > 0) && (hbn >= _next_rebroadcast) )
-         {
-            _next_rebroadcast = hbn + REBROADCAST_RAND_INTERVAL();
-            uint32_t n = 0;
-            for( const auto& trx : _chain_db->_pending_tx )
-            {
-               _p2p_network->broadcast( graphene::net::trx_message( trx ) );
-               ++n;
-            }
-            if( n > 0 )
-            {
-               ilog( "Force rebroadcast ${n} transactions", ("n", n) );
-            }
-         }
-      }
-
       application_impl(application* self)
          : _self(self),
            //_pending_trx_db(std::make_shared<graphene::db::object_database>()),
@@ -340,7 +316,7 @@ namespace detail {
             {
                try
                {
-                  _chain_db->open(_data_dir / "blockchain", _shared_dir, STEEMIT_INIT_SUPPLY, STEEMIT_INIT_SUPPLY_SRD, _shared_file_size, chainbase::database::read_write );\
+                  _chain_db->open(_data_dir / "blockchain", _shared_dir, STEEMIT_INIT_SUPPLY, _shared_file_size, chainbase::database::read_write );\
                }
                catch( fc::assert_exception& )
                {
@@ -353,7 +329,7 @@ namespace detail {
                   catch( chain::block_log_exception& )
                   {
                      wlog( "Error opening block log. Having to resync from network..." );
-                     _chain_db->open( _data_dir / "blockchain", _shared_dir, STEEMIT_INIT_SUPPLY, STEEMIT_INIT_SUPPLY_SRD, _shared_file_size, chainbase::database::read_write );
+                     _chain_db->open( _data_dir / "blockchain", _shared_dir, STEEMIT_INIT_SUPPLY, _shared_file_size, chainbase::database::read_write );
                   }
                }
             }
@@ -367,7 +343,7 @@ namespace detail {
          else
          {
             ilog( "Starting Steem node in read mode." );
-            _chain_db->open( _data_dir / "blockchain", _shared_dir, STEEMIT_INIT_SUPPLY, STEEMIT_INIT_SUPPLY_SRD, _shared_file_size, chainbase::database::read_only );
+            _chain_db->open( _data_dir / "blockchain", _shared_dir, STEEMIT_INIT_SUPPLY, _shared_file_size, chainbase::database::read_only );
 
             if( _options->count( "read-forward-rpc" ) )
             {
@@ -382,13 +358,6 @@ namespace detail {
             }
          }
          _chain_db->show_free_memory( true );
-
-         if( _options->count( "force-tx-rebroadcast" ) )
-         {
-            ilog( "Force transaction rebroadcast" );
-            _next_rebroadcast = 1;
-            _rebroadcast_con = _chain_db->applied_block.connect( [this]( const signed_block& b ){ rebroadcast_pending_tx(); } );
-         }
 
          if( _options->count("api-user") )
          {
@@ -1016,11 +985,11 @@ void application::set_program_options(boost::program_options::options_descriptio
    configuration_file_options.add_options()
          ("p2p-endpoint", bpo::value<string>(), "Endpoint for P2P node to listen on")
          ("p2p-max-connections", bpo::value<uint32_t>(), "Maxmimum number of incoming connections on P2P endpoint")
-         ("p2p-parameters", bpo::value<string>()->default_value(fc::json::to_string(graphene::net::node_configuration())), "P2P network parameters")
+//         ("p2p-parameters", bpo::value<string>()->default_value(fc::json::to_string(graphene::net::node_configuration())), "P2P network parameters")
          ("seed-node,s", bpo::value<vector<string>>()->composing(), "P2P nodes to connect to on startup (may specify multiple times)")
          ("checkpoint,c", bpo::value<vector<string>>()->composing(), "Pairs of [BLOCK_NUM,BLOCK_ID] that should be enforced as checkpoints.")
          ("shared-file-dir", bpo::value<string>(), "Location of the shared memory file. Defaults to data_dir/blockchain")
-         ("shared-file-size", bpo::value<string>()->default_value("4G"), "Size of the shared memory file. Default: 4G")
+         ("shared-file-size", bpo::value<string>()->default_value("1G"), "Size of the shared memory file. Default: 1G")
          ("rpc-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8090"), "Endpoint for websocket RPC to listen on")
          ("rpc-tls-endpoint", bpo::value<string>()->implicit_value("127.0.0.1:8089"), "Endpoint for TLS websocket RPC to listen on")
          ("read-forward-rpc", bpo::value<string>(), "Endpoint to forward write API calls to for a read node" )
@@ -1041,7 +1010,6 @@ void application::set_program_options(boost::program_options::options_descriptio
          ("read-only", "Node will not connect to p2p network and can only read from the chain state" )
          ("check-locks", "Check correctness of chainbase locking")
          ("disable-get-block", "Disable get_block API call" )
-         ("force-tx-rebroadcast", "Rebroadcast transactions every few seconds")
          ;
    command_line_options.add(_cli_options);
    configuration_file_options.add(_cfg_options);

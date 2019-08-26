@@ -25,7 +25,6 @@
 
 #include <graphene/net/core_messages.hpp>
 #include <graphene/net/message.hpp>
-#include <graphene/net/node_configuration.hpp>
 #include <graphene/net/peer_database.hpp>
 
 #include <steemit/protocol/types.hpp>
@@ -272,7 +271,7 @@ namespace graphene { namespace net {
         bool      is_connected() const;
 
         void set_advanced_node_parameters(const fc::variant_object& params);
-        node_configuration get_advanced_node_parameters()const;
+        fc::variant_object get_advanced_node_parameters();
         message_propagation_data get_transaction_propagation_data(const steemit::protocol::transaction_id_type& transaction_id);
         message_propagation_data get_block_propagation_data(const steemit::protocol::block_id_type& block_id);
         node_id_t get_node_id() const;
@@ -291,6 +290,7 @@ namespace graphene { namespace net {
 
         std::vector<potential_peer_record> get_potential_peers() const;
 
+        void disable_peer_advertising();
         fc::variant_object get_call_statistics() const;
       private:
         std::unique_ptr<detail::node_impl, detail::node_impl_deleter> my;
