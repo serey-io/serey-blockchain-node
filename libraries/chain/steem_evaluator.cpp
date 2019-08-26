@@ -115,8 +115,11 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
 
 void account_create_evaluator::do_apply( const account_create_operation& o )
 {
-   const auto& creator = _db.get_account( o.creator );
+  if (_db.head_block_num() >= 12967768) {
+    FC_ASSERT(o.creator == "serey", "only serey account can create new account.");
+  }
 
+   const auto& creator = _db.get_account( o.creator );
    const auto& props = _db.get_dynamic_global_properties();
 
    FC_ASSERT( creator.balance >= o.fee, "Insufficient balance to create account.", ( "creator.balance", creator.balance )( "required", o.fee ) );
@@ -192,6 +195,10 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
 
 void account_create_with_delegation_evaluator::do_apply( const account_create_with_delegation_operation& o )
 {
+   if (_db.head_block_num() >= 12967768) {
+     FC_ASSERT(o.creator == "serey", "only serey account can create new account.");
+   }
+
    FC_ASSERT( _db.has_hardfork( STEEMIT_HARDFORK_0_17__818 ), "Account creation with delegation is not enabled until hardfork 17" );
 
    const auto& creator = _db.get_account( o.creator );
@@ -902,20 +909,41 @@ void transfer_evaluator::do_apply( const transfer_operation& o )
 
 void transfer_to_vesting_evaluator::do_apply( const transfer_to_vesting_operation& o )
 {
+   transfer_to_vesting_operation oo;
+   oo.from = o.from;
+   oo.to = o.to;
+   oo.amount = o.amount;
+
    const auto& from_account = _db.get_account(o.from);
    const auto& to_account = o.to.size() ? _db.get_account(o.to) : from_account;
 
-   FC_ASSERT( _db.get_balance( from_account, STEEM_SYMBOL) >= o.amount, "Account does not have sufficient STEEM for transfer." );
-   _db.adjust_balance( from_account, -o.amount );
-   _db.create_vesting( to_account, o.amount );
+   // TODO: maybe HF22
+   if( _db.get_balance( from_account, STEEM_SYMBOL) < oo.amount)
+   {
+      oo.amount =_db.get_balance( from_account, STEEM_SYMBOL);
+   }
+
+   FC_ASSERT( _db.get_balance( from_account, STEEM_SYMBOL) >= oo.amount, "Account does not have sufficient STEEM for transfer." );
+
+   _db.adjust_balance( from_account, -oo.amount );
+   _db.create_vesting( to_account, oo.amount );
 }
 
 void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 {
-   const auto& account = _db.get_account( o.account );
+   withdraw_vesting_operation oo = o;
+
+   const auto& account = _db.get_account( oo.account );
 
    FC_ASSERT( account.vesting_shares >= asset( 0, VESTS_SYMBOL ), "Account does not have sufficient Steem Power for withdraw." );
-   FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= o.vesting_shares, "Account does not have sufficient Steem Power for withdraw." );
+
+   if (_db.head_block_time() < fc::time_point_sec(1522948989)) { // Fri Apr 06 2018 00:23:09 GMT+0700 (+07)
+      if (!(account.vesting_shares - account.delegated_vesting_shares >= oo.vesting_shares)) {
+         oo.vesting_shares = account.vesting_shares - account.delegated_vesting_shares;
+      }
+   }
+
+   FC_ASSERT( account.vesting_shares - account.delegated_vesting_shares >= oo.vesting_shares, "Account does not have sufficient Steem Power for withdraw." );
 
    if( !account.mined && _db.has_hardfork( STEEMIT_HARDFORK_0_1 ) )
    {
@@ -929,7 +957,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
                  "Account registered by another account requires 10x account creation fee worth of Steem Power before it can be powered down." );
    }
 
-   if( o.vesting_shares.amount == 0 )
+   if( oo.vesting_shares.amount == 0 )
    {
       if( _db.has_hardfork( STEEMIT_HARDFORK_0_5__57 ) )
          FC_ASSERT( account.vesting_withdraw_rate.amount  != 0, "This operation would not change the vesting withdraw rate." );
@@ -949,7 +977,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 
       _db.modify( account, [&]( account_object& a )
       {
-         auto new_vesting_withdraw_rate = asset( o.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL );
+         auto new_vesting_withdraw_rate = asset( oo.vesting_shares.amount / vesting_withdraw_intervals, VESTS_SYMBOL );
 
          if( new_vesting_withdraw_rate.amount == 0 )
             new_vesting_withdraw_rate.amount = 1;
@@ -959,7 +987,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
 
          a.vesting_withdraw_rate = new_vesting_withdraw_rate;
          a.next_vesting_withdrawal = _db.head_block_time() + fc::seconds(STEEMIT_VESTING_WITHDRAW_INTERVAL_SECONDS);
-         a.to_withdraw = o.vesting_shares.amount;
+         a.to_withdraw = oo.vesting_shares.amount;
          a.withdrawn = 0;
       });
    }
@@ -2160,44 +2188,62 @@ void set_reset_account_evaluator::do_apply( const set_reset_account_operation& o
 
 void claim_reward_balance_evaluator::do_apply( const claim_reward_balance_operation& op )
 {
-   const auto& acnt = _db.get_account( op.account );
+   claim_reward_balance_operation cop;
+   cop.account = op.account;
+   cop.reward_steem = op.reward_steem;
+   cop.reward_sbd = op.reward_sbd;
+   cop.reward_vests = op.reward_vests;
 
-   FC_ASSERT( op.reward_steem <= acnt.reward_steem_balance, "Cannot claim that much STEEM. Claim: ${c} Actual: ${a}",
-      ("c", op.reward_steem)("a", acnt.reward_steem_balance) );
-   FC_ASSERT( op.reward_sbd <= acnt.reward_sbd_balance, "Cannot claim that much SBD. Claim: ${c} Actual: ${a}",
-      ("c", op.reward_sbd)("a", acnt.reward_sbd_balance) );
-   FC_ASSERT( op.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
-      ("c", op.reward_vests)("a", acnt.reward_vesting_balance) );
+   const auto& acnt = _db.get_account( cop.account );
+
+   if (!(cop.reward_steem <= acnt.reward_steem_balance)) {
+      cop.reward_steem = acnt.reward_steem_balance;
+   }
+
+   if (!(cop.reward_sbd <= acnt.reward_sbd_balance)) {
+      cop.reward_sbd = acnt.reward_sbd_balance;
+   }
+
+   if (!(cop.reward_vests <= acnt.reward_vesting_balance)) {
+      cop.reward_vests = acnt.reward_vesting_balance;
+   }
+
+   FC_ASSERT( cop.reward_steem <= acnt.reward_steem_balance, "Cannot claim that much STEEM. Claim: ${c} Actual: ${a}",
+      ("c", cop.reward_steem)("a", acnt.reward_steem_balance) );
+   FC_ASSERT( cop.reward_sbd <= acnt.reward_sbd_balance, "Cannot claim that much SBD. Claim: ${c} Actual: ${a}",
+      ("c", cop.reward_sbd)("a", acnt.reward_sbd_balance) );
+   FC_ASSERT( cop.reward_vests <= acnt.reward_vesting_balance, "Cannot claim that much VESTS. Claim: ${c} Actual: ${a}",
+      ("c", cop.reward_vests)("a", acnt.reward_vesting_balance) );
 
    asset reward_vesting_steem_to_move = asset( 0, STEEM_SYMBOL );
-   if( op.reward_vests == acnt.reward_vesting_balance )
+   if( cop.reward_vests == acnt.reward_vesting_balance )
       reward_vesting_steem_to_move = acnt.reward_vesting_steem;
    else
-      reward_vesting_steem_to_move = asset( ( ( uint128_t( op.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_steem.amount.value ) )
+      reward_vesting_steem_to_move = asset( ( ( uint128_t( cop.reward_vests.amount.value ) * uint128_t( acnt.reward_vesting_steem.amount.value ) )
          / uint128_t( acnt.reward_vesting_balance.amount.value ) ).to_uint64(), STEEM_SYMBOL );
 
-   _db.adjust_reward_balance( acnt, -op.reward_steem );
-   _db.adjust_reward_balance( acnt, -op.reward_sbd );
-   _db.adjust_balance( acnt, op.reward_steem );
-   _db.adjust_balance( acnt, op.reward_sbd );
+   _db.adjust_reward_balance( acnt, -cop.reward_steem );
+   _db.adjust_reward_balance( acnt, -cop.reward_sbd );
+   _db.adjust_balance( acnt, cop.reward_steem );
+   _db.adjust_balance( acnt, cop.reward_sbd );
 
    _db.modify( acnt, [&]( account_object& a )
    {
-      a.vesting_shares += op.reward_vests;
-      a.reward_vesting_balance -= op.reward_vests;
+      a.vesting_shares += cop.reward_vests;
+      a.reward_vesting_balance -= cop.reward_vests;
       a.reward_vesting_steem -= reward_vesting_steem_to_move;
    });
 
    _db.modify( _db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
    {
-      gpo.total_vesting_shares += op.reward_vests;
+      gpo.total_vesting_shares += cop.reward_vests;
       gpo.total_vesting_fund_steem += reward_vesting_steem_to_move;
 
-      gpo.pending_rewarded_vesting_shares -= op.reward_vests;
+      gpo.pending_rewarded_vesting_shares -= cop.reward_vests;
       gpo.pending_rewarded_vesting_steem -= reward_vesting_steem_to_move;
    });
 
-   _db.adjust_proxied_witness_votes( acnt, op.reward_vests.amount );
+   _db.adjust_proxied_witness_votes( acnt, cop.reward_vests.amount );
 }
 
 void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_operation& op )
