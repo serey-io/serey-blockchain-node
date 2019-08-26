@@ -160,9 +160,9 @@ namespace steemit { namespace chain {
          chain_properties                                                  median_props;
          version                                                           majority_version;
 
-         uint8_t max_voted_witnesses            = STEEMIT_MAX_VOTED_WITNESSES_HF0;
-         uint8_t max_miner_witnesses            = STEEMIT_MAX_MINER_WITNESSES_HF0;
-         uint8_t max_runner_witnesses           = STEEMIT_MAX_RUNNER_WITNESSES_HF0;
+         uint8_t max_voted_witnesses            = STEEMIT_MAX_VOTED_WITNESSES;
+         uint8_t max_miner_witnesses            = STEEMIT_MAX_MINER_WITNESSES;
+         uint8_t max_runner_witnesses           = STEEMIT_MAX_RUNNER_WITNESSES;
          uint8_t hardfork_required_witnesses    = STEEMIT_HARDFORK_REQUIRED_WITNESSES;
    };
 
