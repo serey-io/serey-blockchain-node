@@ -94,7 +94,7 @@
 #define STEEMIT_MAX_VOTE_CHANGES                5
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
-#define STEEMIT_VOTE_DUST_THRESHOLD             (50000000)
+#define STEEMIT_VOTE_DUST_THRESHOLD             (10000000) // 50000000
 
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
@@ -127,7 +127,6 @@
 
 #define STEEMIT_MAX_RESERVE_RATIO               (20000)
 
-#define STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER 30
 #define STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO    5
 #define STEEMIT_CREATE_ACCOUNT_DELEGATION_TIME     fc::days(30)
 

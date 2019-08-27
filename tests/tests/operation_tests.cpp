@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
 
 
       const witness_schedule_object& wso = db.get_witness_schedule_object();
-      op.fee = asset( wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL );
+      op.fee = asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL );
       //op.fee = asset( 3000, STEEM_SYMBOL );
       op.new_account_name = "alice";
       op.creator = STEEMIT_INIT_MINER_NAME;
@@ -4752,7 +4752,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
       BOOST_TEST_MESSAGE( "--- Test success using only STEEM to reach target delegation." );
 
       tx.clear();
-      op.fee=asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL );
+      op.fee=asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL );
       op.delegation = asset(0, VESTS_SYMBOL);
       op.new_account_name = "sam";
       tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
@@ -4772,7 +4772,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
       BOOST_TEST_MESSAGE( "--- Test failure when insufficient fee fo reach target delegation." );
-      fund( "alice" , asset( db.get_witness_schedule_object().median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO , STEEM_SYMBOL ));
+      fund( "alice" , asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO , STEEM_SYMBOL ));
       STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
 
       validate_database();

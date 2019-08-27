@@ -99,8 +99,8 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
    FC_ASSERT( creator.balance >= o.fee, "Insufficient balance to create account.", ( "creator.balance", creator.balance )( "required", o.fee ) );
 
    const witness_schedule_object& wso = _db.get_witness_schedule_object();
-   FC_ASSERT( o.fee >= asset( wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL ), "Insufficient Fee: ${f} required, ${p} provided.",
-              ("f", asset( wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER, STEEM_SYMBOL ) )
+   FC_ASSERT( o.fee >= asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL ), "Insufficient Fee: ${f} required, ${p} provided.",
+              ("f", asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL ) )
               ("p", o.fee) );
 
    for( auto& a : o.owner.account_auths )
@@ -165,7 +165,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
                ( "creator.vesting_shares", creator.vesting_shares )
                ( "creator.delegated_vesting_shares", creator.delegated_vesting_shares )( "required", o.delegation ) );
 
-   auto target_delegation = asset( wso.median_props.account_creation_fee.amount * STEEMIT_CREATE_ACCOUNT_WITH_STEEM_MODIFIER * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price();
+   auto target_delegation = asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price();
 
    auto current_delegation = asset( o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price() + o.delegation;
 
