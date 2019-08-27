@@ -1837,5 +1837,44 @@ BOOST_AUTO_TEST_CASE( clear_null_account )
    FC_LOG_AND_RETHROW()
 }
 
+
+BOOST_AUTO_TEST_CASE( vote_regeneration )
+{
+  try
+  {
+    BOOST_TEST_MESSAGE( "Testing: vote_regeneration" );
+
+    ACTORS( (alice))
+    generate_block();
+
+    vest( "alice", ASSET( "10.000 TESTS" ) );
+
+    generate_block();
+    validate_database();
+
+    comment_operation comment;
+    comment.author = "alice";
+    comment.permlink = "test";
+    comment.parent_permlink = "test";
+    comment.title = "test";
+    comment.body = "test";
+    vote_operation vote;
+    vote.voter = "alice";
+    vote.author = "alice";
+    vote.permlink = "test";
+    vote.weight = STEEMIT_100_PERCENT;
+
+    signed_transaction tx;
+    tx.operations.push_back( comment );
+    tx.operations.push_back( vote );
+    tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+    tx.sign( alice_private_key, db.get_chain_id() );
+    db.push_transaction( tx, 0 );
+
+    BOOST_REQUIRE( db.get_account( "alice" ).voting_power == 9750 ); // burn 2.5% each full-vote
+  }
+  FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 #endif
