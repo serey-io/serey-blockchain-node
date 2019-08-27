@@ -153,13 +153,13 @@ BOOST_AUTO_TEST_CASE( account_create_apply )
       generate_block();
 
 
-      db_plugin->debug_update( [=]( database& db )
-      {
-         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
-         {
-            w.median_props.account_creation_fee = ASSET( "10.000 TESTS" );
-         });
-      });
+//      db_plugin->debug_update( [=]( database& db )
+//      {
+//         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
+//         {
+//            w.median_props.account_creation_fee = ASSET( "10.000 TESTS" );
+//         });
+//      });
 
       generate_block();
 
@@ -732,12 +732,11 @@ BOOST_AUTO_TEST_CASE( vote_apply )
 
       ACTORS( (alice)(bob)(sam)(dave) )
       generate_block();
-
       vest( "alice", ASSET( "100.000 TESTS" ) );
-      validate_database();
       vest( "bob" , ASSET( "100.000 TESTS" ) );
       vest( "sam" , ASSET( "100.000 TESTS" ) );
       vest( "dave" , ASSET( "100.000 TESTS" ) );
+      validate_database();
       generate_block();
 
       const auto& vote_idx = db.get_index< comment_vote_index >().indices().get< by_comment_voter >();
@@ -1538,10 +1537,10 @@ BOOST_AUTO_TEST_CASE( withdraw_vesting_apply )
       {
          auto& wso = db.get_witness_schedule_object();
 
-         db.modify( wso, [&]( witness_schedule_object& w )
-         {
-            w.median_props.account_creation_fee = ASSET( "10.000 TESTS" );
-         });
+//         db.modify( wso, [&]( witness_schedule_object& w )
+//         {
+//            w.median_props.account_creation_fee = ASSET( "10.000 TESTS" );
+//         });
 
          db.modify( db.get_dynamic_global_properties(), [&]( dynamic_global_property_object& gpo )
          {
@@ -4632,8 +4631,8 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_authorities )
      private_key_type priv_key = generate_private_key( "temp_key" );
 
      account_create_with_delegation_operation op;
-     op.fee = ASSET("1.000 TESTS");
-     op.delegation = asset(3000000, VESTS_SYMBOL);
+     op.fee = ASSET("3.000 TESTS");
+     op.delegation = asset(10000000, VESTS_SYMBOL);
      op.creator = "alice";
      op.new_account_name = "bob";
      op.owner = authority( 1, priv_key.get_public_key(), 1 );
@@ -4694,13 +4693,13 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
 
       generate_block();
 
-      db_plugin->debug_update( [=]( database& db )
-      {
-         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
-         {
-            w.median_props.account_creation_fee = ASSET( "1.000 TESTS" );
-         });
-      });
+//      db_plugin->debug_update( [=]( database& db )
+//      {
+//         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
+//         {
+//            w.median_props.account_creation_fee = ASSET( "1.000 TESTS" );
+//         });
+//      });
 
       generate_block();
 
@@ -4762,7 +4761,7 @@ BOOST_AUTO_TEST_CASE( account_create_with_delegation_apply )
 
       BOOST_TEST_MESSAGE( "--- Test failure when insufficient funds to process transaction." );
       tx.clear();
-      op.fee = ASSET( "10.000 TESTS" );
+      op.fee = ASSET( "1000000.000 TESTS" );
       op.delegation = ASSET( "0.000000 VESTS" );
       op.new_account_name = "pam";
       tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
@@ -4962,13 +4961,13 @@ BOOST_AUTO_TEST_CASE( delegate_vesting_shares_apply )
 
       generate_block();
 
-      db_plugin->debug_update( [=]( database& db )
-      {
-         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
-         {
-            w.median_props.account_creation_fee = ASSET( "1.000 TESTS" );
-         });
-      });
+//      db_plugin->debug_update( [=]( database& db )
+//      {
+//         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
+//         {
+//            w.median_props.account_creation_fee = ASSET( "1.000 TESTS" );
+//         });
+//      });
 
       generate_block();
 
@@ -5155,13 +5154,13 @@ BOOST_AUTO_TEST_CASE( issue_971_vesting_removal )
 
       generate_block();
 
-      db_plugin->debug_update( [=]( database& db )
-      {
-         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
-         {
-            w.median_props.account_creation_fee = ASSET( "1.000 TESTS" );
-         });
-      });
+//      db_plugin->debug_update( [=]( database& db )
+//      {
+//         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
+//         {
+//            w.median_props.account_creation_fee = ASSET( "1.000 TESTS" );
+//         });
+//      });
 
       generate_block();
 
@@ -5184,13 +5183,13 @@ BOOST_AUTO_TEST_CASE( issue_971_vesting_removal )
 
       generate_block();
 
-      db_plugin->debug_update( [=]( database& db )
-      {
-         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
-         {
-            w.median_props.account_creation_fee = ASSET( "100.000 TESTS" );
-         });
-      });
+//      db_plugin->debug_update( [=]( database& db )
+//      {
+//         db.modify( db.get_witness_schedule_object(), [&]( witness_schedule_object& w )
+//         {
+//            w.median_props.account_creation_fee = ASSET( "100.000 TESTS" );
+//         });
+//      });
 
       generate_block();
 
@@ -5391,8 +5390,8 @@ BOOST_AUTO_TEST_CASE( comment_beneficiaries_apply )
 
       BOOST_REQUIRE( db.get_account( "bob" ).reward_steem_balance == ASSET( "0.000 TESTS" ) );
       BOOST_REQUIRE( db.get_account( "bob" ).reward_vesting_steem.amount + db.get_account( "sam" ).reward_vesting_steem.amount == db.get_comment( "alice", string( "test" ) ).beneficiary_payout_value.amount );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) == db.get_account( "bob" ).reward_vesting_steem.amount );
-      BOOST_REQUIRE( ( db.get_account( "alice" ).reward_vesting_steem.amount ) * 2 == db.get_account( "sam" ).reward_vesting_steem.amount );
+      BOOST_REQUIRE( llabs( db.get_account( "alice" ).reward_vesting_steem.amount.value - db.get_account( "bob" ).reward_vesting_steem.amount.value) <= 1 );
+      BOOST_REQUIRE( llabs( db.get_account( "alice" ).reward_vesting_steem.amount.value * 2 - db.get_account( "sam" ).reward_vesting_steem.amount.value) <= 1 );
    }
    FC_LOG_AND_RETHROW()
 }

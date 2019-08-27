@@ -25,9 +25,6 @@
 #define STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD      (60*10) /// 10 minutes
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::minutes(5))
 
-
-#define STEEMIT_MIN_ACCOUNT_CREATION_FEE          100
-
 #define STEEMIT_OWNER_AUTH_RECOVERY_PERIOD                  fc::seconds(60)
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::seconds(12)
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::seconds(0)
@@ -53,8 +50,6 @@
 #define STEEMIT_VOTE_CHANGE_LOCKOUT_PERIOD      (60*60*2)     /// 2 hours
 #define STEEMIT_UPVOTE_LOCKOUT                  (fc::hours(12))
 
-#define STEEMIT_MIN_ACCOUNT_CREATION_FEE           100
-
 #define STEEMIT_OWNER_AUTH_RECOVERY_PERIOD                  fc::days(30)
 #define STEEMIT_ACCOUNT_RECOVERY_REQUEST_EXPIRATION_PERIOD  fc::days(1)
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::minutes(60)
@@ -64,6 +59,8 @@
 #define STEEMIT_HF_19_RECENT_CLAIMS (fc::uint128_t(uint64_t(1000000000000ull)))
 
 #endif
+
+#define STEEMIT_MIN_ACCOUNT_CREATION_FEE        3000 // 3 SEREY
 
 #define STEEMIT_INIT_MINER_NAME                 "initminer"
 
@@ -94,7 +91,7 @@
 #define STEEMIT_MAX_VOTE_CHANGES                5
 #define STEEMIT_REVERSE_AUCTION_WINDOW_SECONDS  (60*30) /// 30 minutes
 #define STEEMIT_MIN_VOTE_INTERVAL_SEC           3
-#define STEEMIT_VOTE_DUST_THRESHOLD             (10000000) // 50000000
+#define STEEMIT_VOTE_DUST_THRESHOLD             (500000)
 
 #define STEEMIT_MIN_ROOT_COMMENT_INTERVAL       (fc::seconds(60*5)) // 5 minutes
 #define STEEMIT_MIN_REPLY_INTERVAL              (fc::seconds(20)) // 20 seconds
