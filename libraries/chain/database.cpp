@@ -2057,7 +2057,7 @@ void database::init_genesis( uint64_t init_supply )
          p.maximum_block_size = STEEMIT_MAX_BLOCK_SIZE;
          p.total_reward_fund_steem = asset( 0, STEEM_SYMBOL );
          p.total_reward_shares2 = 0;
-         p.vote_power_reserve_rate = 10;
+         p.vote_power_reserve_rate = 8;
       } );
 
       // Nothing to do
