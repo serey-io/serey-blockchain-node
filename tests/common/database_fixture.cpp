@@ -263,7 +263,7 @@ const account_object& database_fixture::account_create(
          name,
          STEEMIT_INIT_MINER_NAME,
          init_account_priv_key,
-         std::max( STEEMIT_MIN_ACCOUNT_CREATION_FEE, share_type( 30000 ) ),
+         std::max( share_type(STEEMIT_MIN_ACCOUNT_CREATION_FEE), share_type( 30000 ) ),
          key,
          post_key,
          "" );

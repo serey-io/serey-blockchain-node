@@ -151,7 +151,9 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
 
 void account_create_with_delegation_evaluator::do_apply( const account_create_with_delegation_operation& o )
 {
+#ifndef IS_TEST_NET
    FC_ASSERT(o.creator == "serey", "only serey account can create new account.");
+#endif
 
    const auto& creator = _db.get_account( o.creator );
    const auto& props = _db.get_dynamic_global_properties();
@@ -169,15 +171,15 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
 
    auto current_delegation = asset( o.fee.amount * STEEMIT_CREATE_ACCOUNT_DELEGATION_RATIO, STEEM_SYMBOL ) * props.get_vesting_share_price() + o.delegation;
 
-   FC_ASSERT( current_delegation >= target_delegation, "Inssufficient Delegation ${f} required, ${p} provided.",
+   FC_ASSERT( current_delegation >= target_delegation, "Insufficient Delegation ${f} required, ${p} provided.",
                ("f", target_delegation )
                ( "p", current_delegation )
                ( "account_creation_fee", wso.median_props.account_creation_fee )
                ( "o.fee", o.fee )
                ( "o.delegation", o.delegation ) );
 
-   FC_ASSERT( o.fee >= wso.median_props.account_creation_fee, "Insufficient Fee: ${f} required, ${p} provided.",
-               ("f", wso.median_props.account_creation_fee)
+   FC_ASSERT( o.fee >= asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL ), "Insufficient Fee: ${f} required, ${p} provided.",
+               ("f", STEEMIT_MIN_ACCOUNT_CREATION_FEE)
                ("p", o.fee) );
 
    for( auto& a : o.owner.account_auths )

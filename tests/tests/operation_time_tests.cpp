@@ -117,32 +117,16 @@ BOOST_AUTO_TEST_CASE( comment_payout_equalize )
          db.push_transaction( tx, 0 );
       }
 
-      auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem;
+      // auto reward_steem = db.get_dynamic_global_properties().total_reward_fund_steem;
 
       // generate a few blocks to seed the reward fund
-      generate_blocks(10);
-      //const auto& rf = db.get< reward_fund_object, by_name >( STEEMIT_POST_REWARD_FUND_NAME );
-      //idump( (rf) );
-
       generate_blocks( db.get_comment( "alice", string( "mypost" ) ).cashout_time, true );
-      /*
-      for( const auto& author : authors )
-      {
-         const account_object& a = db.get_account(author.name);
-         ilog( "${n} : ${steem} ${sbd}", ("n", author.name)("steem", a.reward_steem_balance)("sbd", a.reward_sbd_balance) );
-      }
-      for( const auto& voter : voters )
-      {
-         const account_object& a = db.get_account(voter.name);
-         ilog( "${n} : ${steem} ${sbd}", ("n", voter.name)("steem", a.reward_steem_balance)("sbd", a.reward_sbd_balance) );
-      }
-      */
 
       const account_object& alice_account = db.get_account("alice");
       const account_object& bob_account   = db.get_account("bob");
       const account_object& dave_account  = db.get_account("dave");
 
-      BOOST_CHECK( alice_account.reward_vesting_steem == ASSET( "158.156 TESTS" ) );
+      BOOST_CHECK( alice_account.reward_vesting_steem == ASSET( "3.227 TESTS" ) );
       BOOST_CHECK( bob_account.reward_steem_balance == ASSET( "0.000 TESTS" ) );
       BOOST_CHECK( dave_account.reward_steem_balance == alice_account.reward_steem_balance );
    }
@@ -187,7 +171,7 @@ BOOST_AUTO_TEST_CASE( comment_payout_dust )
       comment.author = "bob";
       vote.voter = "bob";
       vote.author = "bob";
-      vote.weight = 59 * STEEMIT_1_PERCENT;
+      vote.weight = 79 * STEEMIT_1_PERCENT;
 
       tx.clear();
       tx.operations.push_back( comment );
