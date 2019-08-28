@@ -67,7 +67,7 @@
 #define STEEMIT_BLOCK_INTERVAL                  3
 #define STEEMIT_BLOCKS_PER_YEAR                 (365*24*60*60/STEEMIT_BLOCK_INTERVAL)
 #define STEEMIT_BLOCKS_PER_DAY                  (24*60*60/STEEMIT_BLOCK_INTERVAL)
-#define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 7)
+#define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 1)
 #define STEEMIT_START_MINER_VOTING_BLOCK        (STEEMIT_BLOCKS_PER_DAY * 1)
 
 #define STEEMIT_NUM_INIT_MINERS                 1
@@ -105,12 +105,14 @@
 #define STEEMIT_1_PERCENT                       (STEEMIT_100_PERCENT/100)
 #define STEEMIT_1_TENTH_PERCENT                 (STEEMIT_100_PERCENT/1000)
 
-#define STEEMIT_INFLATION_RATE_START_PERCENT    (194) // ~2%
-#define STEEMIT_INFLATION_RATE_STOP_PERCENT     (190) // ~2%
+//#define STEEMIT_INFLATION_RATE_START_PERCENT    (194) // ~2%
+//#define STEEMIT_INFLATION_RATE_STOP_PERCENT     (190) // ~2%
+#define STEEMIT_INFLATION_RATE_PERCENT          (192) // ~2%
 #define STEEMIT_INFLATION_NARROWING_PERIOD      (250000) // Narrow 0.01% every 250k blocks
-#define STEEMIT_CONTENT_REWARD_PERCENT          (75*STEEMIT_1_PERCENT) //75% of inflation
-#define STEEMIT_VESTING_FUND_PERCENT            (15*STEEMIT_1_PERCENT) //15% of inflation, 1.425% inflation
+#define STEEMIT_CONTENT_REWARD_PERCENT          (55*STEEMIT_1_PERCENT)
+#define STEEMIT_VESTING_FUND_PERCENT            (20*STEEMIT_1_PERCENT)
 #define STEEMIT_CURATION_REWARD_PERCENT         (25*STEEMIT_1_PERCENT)  // % of STEEMIT_CONTENT_REWARD_PERCENT
+#define STEEMIT_FOUNDATION_FUND_PERCENT         (10*STEEMIT_1_PERCENT)
 
 #define STEEMIT_MINER_PAY_PERCENT               (STEEMIT_1_PERCENT) // 1%
 #define STEEMIT_MIN_RATION                      100000
@@ -192,3 +194,5 @@
 #define STEEMIT_ROOT_POST_PARENT                (account_name_type())
 ///@}
 
+/// special account for creating accounts and holding foundation fund
+#define STEEMIT_SEREY_ACCOUNT                   "serey"
