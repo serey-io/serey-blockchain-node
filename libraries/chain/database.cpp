@@ -1602,12 +1602,13 @@ void database::process_comment_cashout()
 }
 
 /**
- * inflation 10% to 1% in 10 years
+ * inflation fixed 2% an year
  *
  * reward allocation:
- *  - 15% vesting
- *  - 75 content
- *  - 10% witnesses
+ *  - 20% vesting
+ *  - 55 content
+ *  - 15% witnesses
+ *  - 10% serey foundation
  */
 void database::process_funds()
 {
@@ -1615,21 +1616,24 @@ void database::process_funds()
    const auto& wso = get_witness_schedule_object();
    uint32_t block_num = head_block_num();
 
-   int64_t start_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_START_PERCENT );
-   int64_t inflation_rate_adjustment = int64_t( block_num / STEEMIT_INFLATION_NARROWING_PERIOD );
-   int64_t inflation_rate_floor = int64_t( STEEMIT_INFLATION_RATE_STOP_PERCENT );
+//   int64_t start_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_START_PERCENT );
+//   int64_t inflation_rate_adjustment = int64_t( block_num / STEEMIT_INFLATION_NARROWING_PERIOD );
+//   int64_t inflation_rate_floor = int64_t( STEEMIT_INFLATION_RATE_STOP_PERCENT );
+//
+//   // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
+//   int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
 
-   // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-   int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
+   int64_t current_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_PERCENT );
 
    auto new_steem = ( props.current_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
    auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
-   content_reward = pay_reward_funds( content_reward ); /// 72.75% to content creator
-   auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 15% to vesting fund
+   content_reward = pay_reward_funds( content_reward ); /// 55% to content creator
+   auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 20% to vesting fund
    if (block_num < STEEMIT_START_VESTING_BLOCK) {
       vesting_reward = 0;
    }
-   auto witness_reward = new_steem - content_reward - vesting_reward; /// Remaining 10% to witness pay
+   auto foundation_fund = ( new_steem * STEEMIT_FOUNDATION_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 10%
+   auto witness_reward = new_steem - content_reward - vesting_reward - foundation_fund; /// Remaining 15% to witness pay
 
    const auto& cwit = get_witness( props.current_witness );
    witness_reward *= STEEMIT_MAX_WITNESSES;
@@ -1645,7 +1649,7 @@ void database::process_funds()
 
    witness_reward /= wso.witness_pay_normalization_factor;
 
-   new_steem = content_reward + vesting_reward + witness_reward;
+   new_steem = content_reward + vesting_reward + foundation_fund + witness_reward;
 
    modify( props, [&]( dynamic_global_property_object& p )
    {
@@ -1655,6 +1659,7 @@ void database::process_funds()
 
    const auto& producer_reward = create_vesting( get_account( cwit.owner ), asset( witness_reward, STEEM_SYMBOL ) );
    push_virtual_operation( producer_reward_operation( cwit.owner, producer_reward ) );
+   modify(get_account(STEEMIT_SEREY_ACCOUNT), [&](account_object& a) { a.balance += foundation_fund; });
 }
 
 void database::process_savings_withdraws()
@@ -2046,6 +2051,20 @@ void database::init_genesis( uint64_t init_supply )
             w.schedule = witness_object::miner;
          } );
       }
+
+      create< account_object >( [&]( account_object& a )
+      {
+         a.name = STEEMIT_SEREY_ACCOUNT;
+         a.memo_key = init_public_key;
+      } );
+      create< account_authority_object >( [&]( account_authority_object& auth )
+      {
+         auth.account = STEEMIT_SEREY_ACCOUNT;
+         auth.owner.add_authority( init_public_key, 1 );
+         auth.owner.weight_threshold = 1;
+         auth.active  = auth.owner;
+         auth.posting = auth.active;
+      });
 
       create< dynamic_global_property_object >( [&]( dynamic_global_property_object& p )
       {
