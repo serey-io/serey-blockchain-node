@@ -174,7 +174,7 @@ void account_create_with_delegation_evaluator::do_apply( const account_create_wi
    FC_ASSERT( current_delegation >= target_delegation, "Insufficient Delegation ${f} required, ${p} provided.",
                ("f", target_delegation )
                ( "p", current_delegation )
-               ( "account_creation_fee", wso.median_props.account_creation_fee )
+               ( "account_creation_fee", asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL ) )
                ( "o.fee", o.fee )
                ( "o.delegation", o.delegation ) );
 
@@ -809,7 +809,7 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
       const auto& props = _db.get_dynamic_global_properties();
       const witness_schedule_object& wso = _db.get_witness_schedule_object();
 
-      asset min_vests = wso.median_props.account_creation_fee * props.get_vesting_share_price();
+      asset min_vests = asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL ) * props.get_vesting_share_price();
       min_vests.amount.value *= 10;
 
       FC_ASSERT( account.vesting_shares > min_vests || ( o.vesting_shares.amount == 0 ),
@@ -1620,8 +1620,8 @@ void delegate_vesting_shares_evaluator::do_apply( const delegate_vesting_shares_
 
    const auto& wso = _db.get_witness_schedule_object();
    const auto& gpo = _db.get_dynamic_global_properties();
-   auto min_delegation = asset( wso.median_props.account_creation_fee.amount * 10, STEEM_SYMBOL ) * gpo.get_vesting_share_price();
-   auto min_update = wso.median_props.account_creation_fee * gpo.get_vesting_share_price();
+   auto min_delegation = asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE * 10, STEEM_SYMBOL ) * gpo.get_vesting_share_price();
+   auto min_update = asset( STEEMIT_MIN_ACCOUNT_CREATION_FEE, STEEM_SYMBOL ) * gpo.get_vesting_share_price();
 
    // If delegation doesn't exist, create it
    if( delegation == nullptr )
