@@ -33,9 +33,8 @@
 
 #else // IS LIVE STEEM NETWORK
 
-#define STEEMIT_INIT_PUBLIC_KEY_STR             "SRY6LLegbAgLAy28EHrffBVuANFWcFgmqRMW13wBmTExqFE9SCkg4"
-//#define STEEMIT_CHAIN_ID                        (steemit::protocol::chain_id_type())
-#define STEEMIT_CHAIN_ID                        (fc::sha256::hash("serey")) // 3b9a062c4c1f4338f6932ec8bfc083d99369df7479467bbab1811976181b0daf
+#define STEEMIT_INIT_PUBLIC_KEY_STR             "SRY6bLyqMqYzHkFy3RVY9UGFayVnhhnRzpM3Q6pRWSx1NTqj7QQwX"
+#define STEEMIT_CHAIN_ID                        (fc::sha256::hash("serey-testbed")) // 463cf9af197fe057bb6525ee93f7ead15ef4598d0eedea24ed8746942b089a67
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('E') << 16) | (uint64_t('R') << 24) | (uint64_t('E') << 32) | (uint64_t('Y') << 40)) ///< SEREY with 3 digits of precision
 #define STEEMIT_SYMBOL                          "SEREY"
@@ -70,11 +69,8 @@
 #define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 1)
 #define STEEMIT_START_MINER_VOTING_BLOCK        (STEEMIT_BLOCKS_PER_DAY * 1)
 
-#define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_INIT_TIME                       (fc::time_point_sec());
-
 #define STEEMIT_MAX_WITNESSES                   21
-
 #define STEEMIT_MAX_VOTED_WITNESSES             20
 #define STEEMIT_MAX_MINER_WITNESSES             0
 #define STEEMIT_MAX_RUNNER_WITNESSES            1
