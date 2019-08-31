@@ -92,8 +92,11 @@ void witness_update_evaluator::do_apply( const witness_update_operation& o )
 
 void account_create_evaluator::do_apply( const account_create_operation& o )
 {
-   const auto& creator = _db.get_account( o.creator );
+#ifndef IS_TEST_NET
+  FC_ASSERT(o.creator == STEEMIT_SEREY_ACCOUNT, "only serey account can create new account.");
+#endif
 
+   const auto& creator = _db.get_account( o.creator );
    const auto& props = _db.get_dynamic_global_properties();
 
    FC_ASSERT( creator.balance >= o.fee, "Insufficient balance to create account.", ( "creator.balance", creator.balance )( "required", o.fee ) );
@@ -152,7 +155,7 @@ void account_create_evaluator::do_apply( const account_create_operation& o )
 void account_create_with_delegation_evaluator::do_apply( const account_create_with_delegation_operation& o )
 {
 #ifndef IS_TEST_NET
-   FC_ASSERT(o.creator == "serey", "only serey account can create new account.");
+   FC_ASSERT(o.creator == STEEMIT_SEREY_ACCOUNT, "only serey account can create new account.");
 #endif
 
    const auto& creator = _db.get_account( o.creator );
