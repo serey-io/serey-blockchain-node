@@ -449,11 +449,12 @@ void comment_evaluator::do_apply( const comment_operation& o )
          FC_ASSERT( _db.get( parent->root_comment ).allow_replies, "The parent comment has disabled replies." );
       }
 
-      if( o.parent_author == STEEMIT_ROOT_POST_PARENT )
-          FC_ASSERT( ( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now",now)("last_root_post", auth.last_root_post) );
-      else
-          FC_ASSERT( (now - auth.last_post) > STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now",now)("auth.last_post",auth.last_post) );
-
+      if (_db.head_block_num() >= 2 * STEEMIT_BLOCKS_PER_DAY) {
+        if( o.parent_author == STEEMIT_ROOT_POST_PARENT )
+            FC_ASSERT( ( now - auth.last_root_post ) > STEEMIT_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now",now)("last_root_post", auth.last_root_post) );
+        else
+            FC_ASSERT( (now - auth.last_post) > STEEMIT_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now",now)("auth.last_post",auth.last_post) );
+      }
 
       uint16_t reward_weight = STEEMIT_100_PERCENT;
       uint64_t post_bandwidth = auth.post_bandwidth;
