@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#define STEEMIT_BLOCKCHAIN_VERSION              ( version(0, 0, 0) ) // base on steem 0.19.5
+#define STEEMIT_BLOCKCHAIN_VERSION              ( version(0, 0, 0) )
 #define STEEMIT_BLOCKCHAIN_HARDFORK_VERSION     ( hardfork_version( STEEMIT_BLOCKCHAIN_VERSION ) )
 
 #ifdef IS_TEST_NET
@@ -33,15 +33,14 @@
 
 #else // IS LIVE STEEM NETWORK
 
-#define STEEMIT_INIT_PUBLIC_KEY_STR             "SRY6LLegbAgLAy28EHrffBVuANFWcFgmqRMW13wBmTExqFE9SCkg4"
-//#define STEEMIT_CHAIN_ID                        (steemit::protocol::chain_id_type())
-#define STEEMIT_CHAIN_ID                        (fc::sha256::hash("serey")) // 3b9a062c4c1f4338f6932ec8bfc083d99369df7479467bbab1811976181b0daf
+#define STEEMIT_INIT_PUBLIC_KEY_STR             "SRY8adcuYfPTc37uL7SFodWx1JTHT62kArmC2pmbovP7eVosr53r2"
+#define STEEMIT_CHAIN_ID                        (fc::sha256::hash("serey2")) // 5205c25d3e87cb3e8e527e6fbbf324b7b2b9fe7a7192c604ce5b174d08987324
 #define VESTS_SYMBOL  (uint64_t(6) | (uint64_t('V') << 8) | (uint64_t('E') << 16) | (uint64_t('S') << 24) | (uint64_t('T') << 32) | (uint64_t('S') << 40)) ///< VESTS with 6 digits of precision
 #define STEEM_SYMBOL  (uint64_t(3) | (uint64_t('S') << 8) | (uint64_t('E') << 16) | (uint64_t('R') << 24) | (uint64_t('E') << 32) | (uint64_t('Y') << 40)) ///< SEREY with 3 digits of precision
 #define STEEMIT_SYMBOL                          "SEREY"
 #define STEEMIT_ADDRESS_PREFIX                  "SRY"
 
-#define STEEMIT_GENESIS_TIME_EPOCH              1458835200
+#define STEEMIT_GENESIS_TIME_EPOCH              1573098000 // November 7, 2019 3:40:00 AM
 #define STEEMIT_GENESIS_TIME                    (fc::time_point_sec(STEEMIT_GENESIS_TIME_EPOCH))
 #define STEEMIT_MINING_TIME                     (fc::time_point_sec(STEEMIT_GENESIS_TIME_EPOCH))
 #define STEEMIT_CASHOUT_WINDOW_SECONDS          (60*60*24*7)  /// 7 days
@@ -70,11 +69,8 @@
 #define STEEMIT_START_VESTING_BLOCK             (STEEMIT_BLOCKS_PER_DAY * 1)
 #define STEEMIT_START_MINER_VOTING_BLOCK        (STEEMIT_BLOCKS_PER_DAY * 1)
 
-#define STEEMIT_NUM_INIT_MINERS                 1
 #define STEEMIT_INIT_TIME                       (fc::time_point_sec());
-
 #define STEEMIT_MAX_WITNESSES                   21
-
 #define STEEMIT_MAX_VOTED_WITNESSES             20
 #define STEEMIT_MAX_MINER_WITNESSES             0
 #define STEEMIT_MAX_RUNNER_WITNESSES            1
