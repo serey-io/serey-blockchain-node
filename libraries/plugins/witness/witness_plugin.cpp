@@ -454,19 +454,6 @@ witness_plugin::witness_plugin( application* app )
 
 witness_plugin::~witness_plugin()
 {
-   try
-   {
-      if( _block_production_task.valid() )
-         _block_production_task.cancel_and_wait(__FUNCTION__);
-   }
-   catch(fc::canceled_exception&)
-   {
-      //Expected exception. Move along.
-   }
-   catch(fc::exception& e)
-   {
-      edump((e.to_detail_string()));
-   }
 }
 
 void witness_plugin::plugin_set_program_options(
@@ -549,7 +536,20 @@ void witness_plugin::plugin_startup()
 
 void witness_plugin::plugin_shutdown()
 {
-   return;
+  elog("witness_plugin::plugin_shutdown");
+  try
+  {
+    if( _block_production_task.valid() )
+      _block_production_task.cancel_and_wait(__FUNCTION__);
+  }
+  catch(fc::canceled_exception&)
+  {
+    //Expected exception. Move along.
+  }
+  catch(fc::exception& e)
+  {
+    edump((e.to_detail_string()));
+  }
 }
 
 void witness_plugin::schedule_production_loop()
