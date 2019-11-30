@@ -395,6 +395,9 @@ namespace detail
    void witness_plugin_impl::update_account_bandwidth( const account_object& a, uint32_t trx_size, const bandwidth_type type )
    {
       database& _db = _self.database();
+
+      if (_db.head_block_num() < 2 * STEEMIT_BLOCKS_PER_DAY) return; // ignore first 2 days for importing data
+
       const auto& props = _db.get_dynamic_global_properties();
       bool has_bandwidth = true;
 
