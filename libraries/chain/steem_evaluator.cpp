@@ -1038,6 +1038,8 @@ void vote_evaluator::do_apply( const vote_operation& o )
    int64_t regenerated_power = (STEEMIT_100_PERCENT * elapsed_seconds) / STEEMIT_VOTE_REGENERATION_SECONDS;
    int64_t current_power     = std::min( int64_t(voter.voting_power + regenerated_power), int64_t(STEEMIT_100_PERCENT) );
    FC_ASSERT( current_power > 0, "Account currently does not have voting power." );
+//   ilog("current_power=${c}", ("c", current_power));
+   FC_ASSERT( current_power >= int64_t(6175), "Cannot vote with less than 61.75% power (${c})", ("c", current_power) );
 
    int64_t  abs_weight    = abs(o.weight);
    int64_t  used_power    = (current_power * abs_weight) / STEEMIT_100_PERCENT;

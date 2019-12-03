@@ -62,13 +62,13 @@ clean_database_fixture::clean_database_fixture()
    vest( "initminer", 1000000000 );
    generate_block();
 
-   // Fill up the rest of the required miners
-   for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++ )
-   {
-      account_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_pub_key );
-      fund( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), STEEMIT_MIN_PRODUCER_REWARD.amount.value );
-      witness_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount );
-   }
+//   // Fill up the rest of the required miners
+//   for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++ )
+//   {
+//      account_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_pub_key );
+//      fund( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), STEEMIT_MIN_PRODUCER_REWARD.amount.value );
+//      witness_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount );
+//   }
 
    generate_block();
    validate_database();
@@ -121,13 +121,13 @@ void clean_database_fixture::resize_shared_mem( uint64_t size )
 
    vest( "initminer", 1000000000 );
 
-   // Fill up the rest of the required miners
-   for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++ )
-   {
-      account_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_pub_key );
-      fund( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), STEEMIT_MIN_PRODUCER_REWARD.amount.value );
-      witness_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount );
-   }
+//   // Fill up the rest of the required miners
+//   for( int i = STEEMIT_NUM_INIT_MINERS; i < STEEMIT_MAX_WITNESSES; i++ )
+//   {
+//      account_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_pub_key );
+//      fund( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), STEEMIT_MIN_PRODUCER_REWARD.amount.value );
+//      witness_create( STEEMIT_INIT_MINER_NAME + fc::to_string( i ), init_account_priv_key, "foo.bar", init_account_pub_key, STEEMIT_MIN_PRODUCER_REWARD.amount );
+//   }
 
    validate_database();
 }

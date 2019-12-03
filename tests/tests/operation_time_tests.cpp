@@ -1876,5 +1876,73 @@ BOOST_AUTO_TEST_CASE( vote_regeneration )
   FC_LOG_AND_RETHROW()
 }
 
+/**
+ * Not allow to vote if power less than 68.35% (16 full votes)
+ */
+BOOST_AUTO_TEST_CASE( vote_power_threshold )
+{
+  try
+  {
+    BOOST_TEST_MESSAGE( "Testing: vote_power_threshold" );
+
+    ACTORS( (alice))
+    generate_block();
+
+    vest( "alice", ASSET( "10.000 TESTS" ) );
+
+    generate_block();
+    validate_database();
+
+    // create 21 posts
+    for (int16_t i = 0; i < 21; i++) {
+      comment_operation comment;
+      comment.author = "alice";
+      comment.permlink = "test-" + fc::to_string( i );
+      comment.parent_permlink = "test";
+      comment.title = "test-" + fc::to_string( i );
+      comment.body = "test " + fc::to_string( i );
+      comment.validate();
+
+      signed_transaction tx;
+      tx.operations.push_back( comment );
+      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+    }
+
+    // vote 20 above post
+    for (int16_t i = 0; i < 20; i++) {
+      vote_operation vote;
+      vote.voter = "alice";
+      vote.author = "alice";
+      vote.permlink = "test-" + fc::to_string( i );
+      vote.weight = STEEMIT_100_PERCENT;
+      vote.validate();
+
+      signed_transaction tx;
+      tx.operations.push_back( vote );
+      tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+      tx.sign( alice_private_key, db.get_chain_id() );
+      db.push_transaction( tx, 0 );
+      generate_blocks( 1 );
+    }
+
+    // vote number 21, expect an error
+    vote_operation vote;
+    vote.voter = "alice";
+    vote.author = "alice";
+    vote.permlink = "test-20";
+    vote.weight = STEEMIT_100_PERCENT;
+    vote.validate();
+
+    signed_transaction tx;
+    tx.operations.push_back( vote );
+    tx.set_expiration( db.head_block_time() + STEEMIT_MAX_TIME_UNTIL_EXPIRATION );
+    tx.sign( alice_private_key, db.get_chain_id() );
+    STEEMIT_REQUIRE_THROW( db.push_transaction( tx, 0 ), fc::exception );
+  }
+  FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_SUITE_END()
 #endif
