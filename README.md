@@ -1,4 +1,4 @@
-# Introducing Steem (beta)
+# Introducing Serey (beta)
 
 Serey is a Delegated Proof of Stake blockchain that uses a Democratic voting system to organize content by visibility and relevance. The blockchain is a central connecting point to the Serey ecosystem of dApps and websites. 
 
@@ -35,13 +35,10 @@ IN THE SOFTWARE.
 
 You can read the Serey Whitepaper at: https://serey.io/static/media/serey-white-paper-2020.ddd99c95.pdf
 
-# Quickstart
-
-Just want to get up and running quickly? We have pre-built docker images for your convenience. More details are in our [quickstart guide](https://github.com/steemit/steem/blob/master/doc/exchangequickstart.md).
 
 # Building
 
-We strongly recommend using one of our pre-built Docker images or using Docker to build Serey. Both of these processes are described in the [quickstart guide](https://github.com/steemit/steem/blob/master/doc/exchangequickstart.md).
+We strongly recommend using one of our pre-built Docker images or using Docker to build Serey.
 
 
 ## Dockerized p2p Node
