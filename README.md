@@ -1,18 +1,25 @@
 # Introducing Steem (beta)
 
-Steem is a Delegated Proof of Stake blockchain that uses a "Proof of Brain" social consensus algorithm for token allocation.
+Serey is a Delegated Proof of Stake blockchain that uses a Democratic voting system to organize content by visibility and relevance. The blockchain is a central connecting point to the Serey ecosystem of dApps and websites. 
 
-  - Currency symbol STEEM.
-  - 10% APR inflation narrowing to 1% APR over 20 years.
-  - 75% of inflation to "Proof of Brain" social consensus algorithm.
-  - 15% of inflation to stake holders.
-  - 10% of inflation to block producers.
+    • Currency symbol SRY
+    • 1,5% Annual inflation 
+    • 33,33% of the inflation to rewarding the content and the curation
+    • 33,33% of the inflation to stakeholders in Serey Power
+    • 33,33% of inflation to witnesses/block producers
+
+Serey ecosystem of dApps:
+    1. Serey.io (web and mobile)
+    2. Serey Market place (web)
+    3. Serey Poker (web)
+    4. Serey Football (web)
+    5. Serey DEX (web)
+    6. Serey Lottery (under construction)
+    7. More..
 
 # Public Announcement & Discussion
 
-Steem was announced on the
-[Bitcointalk forum](https://bitcointalk.org/index.php?topic=1410943.new) prior to
-the start of any mining.
+Serey was announced on Medium.com by an article written by one of the founders Chhay Lin Lim in 2018: https://medium.com/@chhaylin
 
 # No Support & No Warranty
 
@@ -26,7 +33,7 @@ IN THE SOFTWARE.
 
 # Whitepaper
 
-You can read the Steem Whitepaper at [Steem.io/SteemWhitePaper.pdf](https://steem.io/SteemWhitePaper.pdf).
+You can read the Serey Whitepaper at: https://serey.io/static/media/serey-white-paper-2020.ddd99c95.pdf
 
 # Quickstart
 
@@ -34,31 +41,21 @@ Just want to get up and running quickly? We have pre-built docker images for you
 
 # Building
 
-We strongly recommend using one of our pre-built Docker images or using Docker to build Steem. Both of these processes are described in the [quickstart guide](https://github.com/steemit/steem/blob/master/doc/exchangequickstart.md).
+We strongly recommend using one of our pre-built Docker images or using Docker to build Serey. Both of these processes are described in the [quickstart guide](https://github.com/steemit/steem/blob/master/doc/exchangequickstart.md).
 
-If you would still like to build from source, we do have [build instructions](https://github.com/steemit/steem/blob/master/doc/building.md) for Linux (Ubuntu LTS) and macOS X.
 
 ## Dockerized p2p Node
 
 To run a p2p node (ca. 2GB of memory is required at the moment):
 
-    docker run \
-        -d -p 2001:2001 -p 8090:8090 --name steemd-default \
-        steemit/steem
-
-    docker logs -f steemd-default  # follow along
+   sudo docker run --rm -it -p 8090:8090 -p 2001:2001 -v /opt/witness_node_data_dir:/opt/witness_node_data_dir sereyio/sereyd:latest /opt/steemd -d /opt/witness_node_data_dir
 
 ## Dockerized Full Node
 
 To run a node with *all* the data (e.g. for supporting a content website)
 that uses ca. 14GB of memory and growing:
 
-    docker run \
-        --env USE_WAY_TOO_MUCH_RAM=1 --env USE_FULL_WEB_NODE=1 \
-        -d -p 2001:2001 -p 8090:8090 --name steemd-full \
-        steemit/steem
-
-    docker logs -f steemd-full
+ sudo docker run --rm -it -p 8090:8090 -p 2001:2001 -v /opt/witness_node_data_dir:/opt/witness_node_data_dir sereyio/sereyd:latest /opt/steemd -d /opt/witness_node_data_dir
 
 # Environment variables
 
@@ -70,27 +67,6 @@ There are quite a few environment variables that can be set to run steemd in dif
 * `USE_MULTICORE_READONLY` - if set to true, this will enable steemd in multiple reader mode to take advantage of multiple cores (if available). Read requests are handled by the read-only nodes, and write requests are forwarded back to the single 'writer' node automatically. NGINX load balances all requests to the reader nodes, 4 per available core. This setting is still considered experimental and may have trouble with some API calls until further development is completed.
 * `HOME` - set this to the path where you want steemd to store it's data files (block log, shared memory, config file, etc). By default `/var/lib/steemd` is used and exists inside the docker container. If you want to use a different mountpoint (like a ramdisk, or a different drive) then you may want to set this variable to map the volume to your docker container.
 
-# PaaS mode
-
-Steemd now supports a PaaS mode (platform as a service) that currently works with Amazon's Elastic Beanstalk service. It can be launched using the following environment variables:
-
-* `USE_PAAS` - if set to true, steemd will launch in a format that works with AWS EB. Containers will exit upon failure so that they can be relaunched automatically by ECS. This mode assumes `USE_WAY_TOO_MUCH_RAM` and `USE_FULL_WEB_NODE`, they do not need to be also set.
-* `S3_BUCKET` - set this to the name of the S3 bucket where you will store shared memory files for steemd in Amazon S3. They will be stored compressed in bz2 format with the file name `blockchain-$VERSION-latest.tar.bz2`, where $VERSION is the release number followed by the git short commit hash stored in each docker image at `/etc/steemdversion`.
-* `SYNC_TO_S3` - if set to true, the node will function to only generate shared memory files and upload them to the specified S3 bucket. This makes fast deployments and autoscaling for steemd possible.
-
-# Seed Nodes
-
-A list of some seed nodes to get you started can be found in
-[doc/seednodes.txt](doc/seednodes.txt).
-
-This same file is baked into the docker images and can be overridden by
-setting `STEEMD_SEED_NODES` in the container environment at `docker run`
-time to a whitespace delimited list of seed nodes (with port).
-
-# Testing
-
-See [doc/testing.md](doc/testing.md) for test build targets and info
-on how to use lcov to check code test coverage.
 
 # System Requirements
 
