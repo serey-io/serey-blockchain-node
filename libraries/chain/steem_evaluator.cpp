@@ -973,7 +973,9 @@ void withdraw_vesting_evaluator::do_apply( const withdraw_vesting_operation& o )
    {
       int vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_16;
       if( _db.has_hardfork( STEEMIT_HARDFORK_0_16__551 ) )
-         vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS; /// 13 weeks = 1 quarter of a year
+         vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS_PRE_HF_23; /// 13 weeks = 1 quarter of a year
+      if( _db.has_hardfork( STEEMIT_HARDFORK_0_23__9 ) )
+         vesting_withdraw_intervals = STEEMIT_VESTING_WITHDRAW_INTERVALS; /// 2 weeks
 
       _db.modify( account, [&]( account_object& a )
       {
