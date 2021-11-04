@@ -1,0 +1,12 @@
+#ifndef STEEMIT_HARDFORK_0_23
+#define STEEMIT_HARDFORK_0_23 23
+
+// Change power down to 2 weeks
+#define STEEMIT_HARDFORK_0_23__9  (STEEMIT_HARDFORK_0_16)
+
+
+// Sat Mar 09 2019 09:53:20 GMT+0700 (Indochina Time) - TODO!
+#define STEEMIT_HARDFORK_0_23_TIME (STEEMIT_GENESIS_TIME+93264800) // 1552100000
+#define STEEMIT_HARDFORK_0_23_VERSION hardfork_version( 0, 23 )
+
+#endif
