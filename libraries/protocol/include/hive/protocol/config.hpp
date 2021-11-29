@@ -73,9 +73,9 @@ using namespace hive::protocol::testnet_blockchain_configuration;
 #define HIVE_BLOCKCHAIN_VERSION               ( version(1, 25, 0) )
 
 #define HIVE_INIT_PUBLIC_KEY_STR              "STM8GC13uCZbP44HzMLV6zPZGwVQ8Nt4Kji8PapsPiNq1BK153XTX"
-#define STEEM_CHAIN_ID                        fc::sha256()
-#define HIVE_CHAIN_ID                         fc::sha256("beeab0de00000000000000000000000000000000000000000000000000000000")
-#define HIVE_ADDRESS_PREFIX                   "STM"
+#define STEEM_CHAIN_ID                        (fc::sha256::hash("Serey v2"))
+#define HIVE_CHAIN_ID                         (fc::sha256::hash("Serey v2"))
+#define HIVE_ADDRESS_PREFIX                   "SRY"
 
 #define HIVE_GENESIS_TIME                     (fc::time_point_sec(1458835200))
 #define HIVE_MINING_TIME                      (fc::time_point_sec(1458838800))
