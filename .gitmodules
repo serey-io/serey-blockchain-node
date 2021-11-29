@@ -1,4 +1,4 @@
-[submodule "libraries/fc/vendor/secp256k1-zkp"]
+[submodule "libraries/fc/vendor/secp258k1-zkp"]
 	path = libraries/fc/vendor/secp256k1-zkp
 	url = https://github.com/cryptonomex/secp256k1-zkp.git
 [submodule "libraries/fc/vendor/websocketpp"]
@@ -6,8 +6,8 @@
 	url = https://github.com/zaphoyd/websocketpp.git
 [submodule "tests/tests_api"]
 	path = tests/tests_api
-	url = ../tests_api.git
+	url = https://gitlab.syncad.com/hive/tests_api.git
 	branch = mi_tests_import
 [submodule "tests/test_tools"]
 	path = tests/test_tools
-	url = ../test-tools.git
+	url = https://gitlab.syncad.com/hive/test-tools.git
