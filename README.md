@@ -104,3 +104,17 @@ echo  1000 | sudo tee /proc/sys/vm/dirty_expire_centisec
 echo    80 | sudo tee /proc/sys/vm/dirty_ratio
 echo 30000 | sudo tee /proc/sys/vm/dirty_writeback_centisec
 ```
+
+# Building
+
+* Boost 1.70
+* OpenSSL 1.0
+
+
+```
+mkdir ../build-chain
+cd ../build-chain
+CC=gcc-5 CXX=g++-5 cmake -DBOOST_ROOT=/opt/boost_1_70_0 -DCMAKE_BUILD_TYPE=Release -DBoost_NO_BOOST_CMAKE=ON -DOPENSSL_ROOT_DIR=/usr/lib/openssl-1.0/ -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/openssl-1.0/libcrypto.so -DOPENSSL_INCLUDE_DIR=/usr/include/openssl-1.0 ../chain
+
+make -j3 hived
+```
