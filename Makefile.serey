@@ -1,0 +1,28 @@
+IMAGE_REGISTRY := registry.to-be-defined.io
+IMAGE_NAME := serey/core
+RELEASE_VERSION := $(shell git describe)
+RELEASE_DATE := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
+DOCKER_BUILD_ARGS := --build-arg BUILD_DATE=$(RELEASE_DATE) --build-arg VCS_REF=$(RELEASE_VERSION)
+
+ifndef MODE
+$(error MODE ['producer','node'] required!)
+endif
+
+ifeq ($(MODE),producer)
+DOCKER_BUILD_ARGS := $(DOCKER_BUILD_ARGS) --target=consensus_node
+RELEASE_VERSION := $(RELEASE_VERSION)-producer
+else
+DOCKER_BUILD_ARGS := $(DOCKER_BUILD_ARGS) --target=general_node
+endif
+
+.PHONY: docker
+docker: docker_build docker_publish
+
+.PHONY: docker_build
+docker_build:
+	DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_ARGS) -t $(IMAGE_REGISTRY)/$(IMAGE_NAME):${RELEASE_VERSION} .
+
+.PHONY: docker_publish
+docker_publish:
+	# FIXME
+	#docker push $(IMAGE_REGISTRY)/$(IMAGE_NAME):$(RELEASE_VERSION)

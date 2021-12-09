@@ -54,6 +54,10 @@ We **strongly** recommend using one of our pre-built Docker images or using Dock
 
 But if you would still like to build from source, we also have [build instructions](doc/building.md) for Linux (Ubuntu LTS) and macOS.
 
+The build requires a custom OpenSSL and Boost installation as well as gcc 10:
+
+            CC=gcc-10 CXX=g++-10 cmake -DBOOST_ROOT=/opt/boost_1_70_0 -DCMAKE_BUILD_TYPE=Release -DBoost_NO_BOOST_CMAKE=ON -DOPENSSL_ROOT_DIR=/usr/lib/openssl-1.0/ -DOPENSSL_CRYPTO_LIBRARY=/usr/lib/openssl-1.0/libcrypto.so -DOPENSSL_INCLUDE_DIR=/usr/include/openssl-1.0 ../chain
+
 ## Dockerized Consensus Node
 
 To run a Hive node (ca. 16GB of memory is required at the moment):
