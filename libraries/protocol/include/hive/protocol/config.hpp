@@ -72,13 +72,13 @@ using namespace hive::protocol::testnet_blockchain_configuration;
 
 #define HIVE_BLOCKCHAIN_VERSION               ( version(1, 25, 0) )
 
-#define HIVE_INIT_PUBLIC_KEY_STR              "STM8GC13uCZbP44HzMLV6zPZGwVQ8Nt4Kji8PapsPiNq1BK153XTX"
+#define HIVE_INIT_PUBLIC_KEY_STR              "SRY7iX3tZLLnoBGasFmHXz8vTr4NnQqQDJiPer8W83uM5yKFzmZ5b"
 #define STEEM_CHAIN_ID                        (fc::sha256::hash("Serey v2"))
 #define HIVE_CHAIN_ID                         (fc::sha256::hash("Serey v2"))
 #define HIVE_ADDRESS_PREFIX                   "SRY"
 
-#define HIVE_GENESIS_TIME                     (fc::time_point_sec(1458835200))
-#define HIVE_MINING_TIME                      (fc::time_point_sec(1458838800))
+#define HIVE_GENESIS_TIME                     (fc::time_point_sec(1639058879))
+#define HIVE_MINING_TIME                      (fc::time_point_sec(1639058879))
 #define HIVE_CASHOUT_WINDOW_SECONDS_PRE_HF12  (60*60*24)    /// 1 day
 #define HIVE_CASHOUT_WINDOW_SECONDS_PRE_HF17  (60*60*12)    /// 12 hours
 #define HIVE_CASHOUT_WINDOW_SECONDS           (60*60*24*7)  /// 7 days
@@ -393,7 +393,7 @@ using namespace hive::protocol::testnet_blockchain_configuration;
 //note that old account is still considered a treasury (cannot be reused for other purposes), just all funds and actions are redirected to new one
 //DO NOT USE the following constants anywhere other than inside database::get_treasury_name()
 #define OBSOLETE_TREASURY_ACCOUNT             "steem.dao"
-#define NEW_HIVE_TREASURY_ACCOUNT             "hive.fund"
+#define NEW_HIVE_TREASURY_ACCOUNT             "serey.fund"
 ///@}
 
 /// HIVE PROPOSAL SYSTEM support

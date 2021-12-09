@@ -3818,10 +3818,8 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
       auth.active.weight_threshold = 1;
     });
 
-#ifdef IS_TEST_NET
     create< account_object >( OBSOLETE_TREASURY_ACCOUNT );
     create< account_object >( NEW_HIVE_TREASURY_ACCOUNT );
-#endif
 
     create< account_object >( HIVE_TEMP_ACCOUNT );
     create< account_authority_object >( [&]( account_authority_object& auth )
@@ -3871,6 +3869,15 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
 #else
     // Nothing to do
     create< feed_history_object >( [&]( feed_history_object& o ) {});
+
+    // For Serey, we also create the initial feed history object
+    create< feed_history_object >( [&]( feed_history_object& o )
+    {
+      o.current_median_history = price( asset( 1, HBD_SYMBOL ), asset( 1, HIVE_SYMBOL ) );
+      o.market_median_history = o.current_median_history;
+      o.current_min_history = o.current_median_history;
+      o.current_max_history = o.current_median_history;
+    });
 #endif
 
     for( int i = 0; i < 0x10000; i++ )
@@ -4198,7 +4205,7 @@ void database::_apply_block( const signed_block& next_block )
   clear_null_account_balance();
   consolidate_treasury_balance();
   process_funds();
-  process_conversions();
+  //process_conversions();
   process_comment_cashout();
   process_vesting_withdrawals();
   process_savings_withdraws();
