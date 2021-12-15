@@ -2,6 +2,8 @@ import json
 import requests as req
 from pprint import pprint
 from pathlib import Path
+import datetime as dt
+import click
 
 from graphene_rpc import GrapheneRPC
 
@@ -12,7 +14,19 @@ def dump(path, j):
         json.dump(j, f, indent=2)
 
 
-def main():
+def parse_time(s):
+    return dt.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
+
+
+# fmt: off
+@click.command()
+@click.option(
+    "--min_cashout_time", type=str, required=True,
+    help="Format: YYYY-MM-DDTHH:MM:SS")
+# fmt: on
+def main(min_cashout_time):
+    min_cashout_time = parse_time(min_cashout_time)
+
     url = "http://localhost:8090/rpc"
     rpc = GrapheneRPC(url)
 
@@ -32,21 +46,18 @@ def main():
     dump("reward_fund", reward_fund)
 
     ####################################################################################
-    # REWARD_FUND
+    # PENDING_CASHOUTS
     ####################################################################################
     params = {"tag": "", "limit": 1000000000000000000, "truncate_body": 1}
 
     res = rpc.call("get_discussions_by_payout", params=[params])
     discussion_objs = res.json()["result"]
-    dump("discussion_by_payout", discussion_objs)
 
     res = rpc.call("get_post_discussions_by_payout", params=[params])
     post_discussion_objs = res.json()["result"]
-    dump("post_discussion_by_payout", post_discussion_objs)
 
     res = rpc.call("get_comment_discussions_by_payout", params=[params])
     comment_discussion_objs = res.json()["result"]
-    dump("comment_discussion_by_payout", comment_discussion_objs)
 
     discussion_obj_ids = [d["id"] for d in discussion_objs]
     post_discussion_obj_ids = [d["id"] for d in post_discussion_objs]
@@ -57,7 +68,12 @@ def main():
     fused.update({o["id"]: o for o in discussion_objs})
     fused.update({o["id"]: o for o in post_discussion_objs})
     fused.update({o["id"]: o for o in comment_discussion_objs})
-    dump("all_discussions", [v for v in fused.values()])
+
+    has_pending_cashout = lambda o: (
+        parse_time(o["cashout_time"]) > min_cashout_time
+    )
+    dump("discussions", [o for o in fused.values() if has_pending_cashout(o)])
+
 
 
 if __name__ == "__main__":
