@@ -2179,11 +2179,9 @@ void database::apply_block( const signed_block& next_block, uint32_t skip )
 { try {
    //fc::time_point begin_time = fc::time_point::now();
 
-   // TODO @dimfred check whether this will be so easy
-   if(fc::time_point_sec(fc::time_point::now()) >= STEEMIT_STOP_BLOCK_AT_TIME)
+   if( next_block.timestamp >= STEEMIT_STOP_BLOCK_AT_TIME )
    {
       FC_LOG_MESSAGE(info, "STEEMIT_STOP_BLACK_AT reached, no more blocks applied after this point.");
-      // in theory we could also assert here
       return;
    }
 
