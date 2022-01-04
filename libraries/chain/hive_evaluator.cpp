@@ -815,6 +815,18 @@ void comment_evaluator::do_apply( const comment_operation& o )
       else
           FC_ASSERT( ( _now - auth.last_post ) > HIVE_MIN_REPLY_INTERVAL, "You may only comment once every 20 seconds.", ("now",_now)("auth.last_post",auth.last_post) );
     }
+    else if ( _db.has_hardfork( HIVE_SEREY_HARDFORK ) )
+    {
+      if( o.parent_author == HIVE_ROOT_POST_PARENT )
+      {
+        if( o.body.size() > HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL_SIZE )
+          FC_ASSERT( ( _now - auth.last_root_post ) > HIVE_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every 5 minutes.", ("now",_now)("last_root_post", auth.last_root_post) );
+        else
+          FC_ASSERT( ( _now - auth.last_root_post ) > HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL, "You may only post once every TODO.", ("now",_now)("last_root_post", auth.last_root_post) );
+      }
+      else
+          FC_ASSERT( ( _now - auth.last_post ) >= HIVE_MIN_REPLY_INTERVAL, "You may only comment once every 3 seconds.", ("now",_now)("auth.last_post",auth.last_post) );
+    }
     else
     {
       FC_ASSERT( ( _now - auth.last_post ) > fc::seconds(60), "You may only post once per minute.", ("now",_now)("auth.last_post",auth.last_post) );
