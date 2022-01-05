@@ -30,8 +30,11 @@
 #define STEEMIT_OWNER_UPDATE_LIMIT                          fc::seconds(0)
 #define STEEMIT_OWNER_AUTH_HISTORY_TRACKING_START_BLOCK_NUM 1
 #define STEEMIT_HARDFORK_REQUIRED_WITNESSES     1
+#define STEEMIT_STOP_BLOCK_AT_TIME              (fc::time_point_sec(fc::time_point::now()) + 10)
 
 #else // IS LIVE STEEM NETWORK
+
+#define STEEMIT_STOP_BLOCK_AT_TIME              (fc::time_point_sec(fc::time_point::now()) + 10)
 
 #define STEEMIT_INIT_PUBLIC_KEY_STR             "SRY8adcuYfPTc37uL7SFodWx1JTHT62kArmC2pmbovP7eVosr53r2"
 #define STEEMIT_CHAIN_ID                        (fc::sha256::hash("serey2")) // 5205c25d3e87cb3e8e527e6fbbf324b7b2b9fe7a7192c604ce5b174d08987324

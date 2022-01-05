@@ -77,7 +77,7 @@ class database_api_impl;
 struct discussion_query {
    void validate()const{
       FC_ASSERT( filter_tags.find(tag) == filter_tags.end() );
-      FC_ASSERT( limit <= 100 );
+      // FC_ASSERT( limit <= 100 );
    }
 
    string           tag;

@@ -18,6 +18,7 @@ libraries/wallet/Doxyfile
 libraries/wallet/api_documentation.cpp
 libraries/wallet/doxygen
 
+
 programs/cli_wallet/cli_wallet
 programs/js_operation_serializer/js_operation_serializer
 programs/steemd/steemd
@@ -34,6 +35,8 @@ tests/chain_test
 tests/plugin_test
 tests/intense_test
 tests/performance_test
+
+contrib/dump_state/serey_dump/*
 
 doxygen
 

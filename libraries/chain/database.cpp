@@ -2179,6 +2179,12 @@ void database::apply_block( const signed_block& next_block, uint32_t skip )
 { try {
    //fc::time_point begin_time = fc::time_point::now();
 
+   if( next_block.timestamp >= STEEMIT_STOP_BLOCK_AT_TIME )
+   {
+      FC_LOG_MESSAGE(info, "STEEMIT_STOP_BLACK_AT reached, no more blocks applied after this point.");
+      return;
+   }
+
    auto block_num = next_block.block_num();
    if( _checkpoints.size() && _checkpoints.rbegin()->second != block_id_type() )
    {
