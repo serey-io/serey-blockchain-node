@@ -148,7 +148,7 @@ namespace hive { namespace protocol {
   void comment_options_operation::validate()const
   {
     validate_account_name( author );
-    FC_ASSERT( percent_hbd <= HIVE_100_PERCENT, "Percent cannot exceed 100%" );
+    FC_ASSERT( percent_hbd == 0, "There are no HBD here, percent_hbd has to be 0" );
     FC_ASSERT( max_accepted_payout.symbol == HBD_SYMBOL, "Max accepted payout must be in HBD" );
     FC_ASSERT( max_accepted_payout.amount.value >= 0, "Cannot accept less than 0 payout" );
     validate_permlink( permlink );
@@ -204,6 +204,7 @@ namespace hive { namespace protocol {
   { try {
     validate_account_name( from );
     validate_account_name( to );
+    FC_ASSERT( amount.symbol != HBD_SYMBOL, "HBD unavailable.");
     FC_ASSERT( amount.symbol.is_vesting() == false, "Transfer of vesting is not allowed." );
     FC_ASSERT( amount.amount > 0, "Cannot transfer a negative amount (aka: stealing)" );
     FC_ASSERT( memo.size() < HIVE_MAX_MEMO_SIZE, "Memo is too large" );
@@ -213,6 +214,7 @@ namespace hive { namespace protocol {
   void transfer_to_vesting_operation::validate() const
   {
     validate_account_name( from );
+    FC_ASSERT( amount.symbol != HBD_SYMBOL, "HBD unavailable.");
     FC_ASSERT( amount.symbol == HIVE_SYMBOL ||
             ( amount.symbol.space() == asset_symbol_type::smt_nai_space && amount.symbol.is_vesting() == false ),
             "Amount must be HIVE or SMT liquid" );
@@ -542,11 +544,13 @@ namespace hive { namespace protocol {
 
   void limit_order_cancel_operation::validate()const
   {
+    FC_ASSERT( false, "The internal DEX is disabled");
     validate_account_name( owner );
   }
 
   void convert_operation::validate()const
   {
+    FC_ASSERT( false, "No HBD available. Feature disabled.");
     validate_account_name( owner );
     /// only allow conversion from HBD to HIVE, allowing the opposite can enable traders to abuse
     /// market fluxuations through converting large quantities without moving the price.
@@ -556,6 +560,7 @@ namespace hive { namespace protocol {
 
   void collateralized_convert_operation::validate()const
   {
+    FC_ASSERT( false, "No HBD available. Feature disabled.");
     validate_account_name( owner );
     /// only allow conversion from HIVE to HBD (at least for now)
     FC_ASSERT( is_asset_type( amount, HIVE_SYMBOL ), "Can only convert HIVE to HBD" );
@@ -652,6 +657,7 @@ namespace hive { namespace protocol {
   }
 
   void transfer_to_savings_operation::validate()const {
+    FC_ASSERT( amount.symbol != HBD_SYMBOL, "HBD unavailable.");
     validate_account_name( from );
     validate_account_name( to );
     FC_ASSERT( amount.amount > 0 );
@@ -660,6 +666,7 @@ namespace hive { namespace protocol {
     FC_ASSERT( fc::is_utf8( memo ), "Memo is not UTF8" );
   }
   void transfer_from_savings_operation::validate()const {
+    FC_ASSERT( amount.symbol != HBD_SYMBOL, "HBD unavailable.");
     validate_account_name( from );
     validate_account_name( to );
     FC_ASSERT( amount.amount > 0 );
@@ -737,6 +744,8 @@ namespace hive { namespace protocol {
 
   void recurrent_transfer_operation::validate()const
   { try {
+
+      FC_ASSERT( amount.symbol != HBD_SYMBOL, "HBD unavailable.");
       validate_account_name( from );
       validate_account_name( to );
       FC_ASSERT( amount.symbol.is_vesting() == false, "Transfer of vesting is not allowed." );
