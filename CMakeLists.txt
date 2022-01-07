@@ -374,7 +374,7 @@ else()
 endif()
 
 set(INDENT_WIDTH 2 CACHE STRING "Determine how many spaces should be used for formating (by default 2)")
-find_program(PYTHON_3_6 "python3.6")
+find_program(PYTHON_3_6 "python3")
 
 # How to launch?
 # cmake --build . --target format
