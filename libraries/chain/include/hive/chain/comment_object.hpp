@@ -154,7 +154,7 @@ namespace hive { namespace chain {
       int32_t           net_votes = 0;
 
       HBD_asset         max_accepted_payout = asset( 1000000000, HBD_SYMBOL );       /// HBD value of the maximum payout this post will receive
-      uint16_t          percent_hbd = HIVE_100_PERCENT; /// the percent of HBD to key, unkept amounts will be received as VESTS
+      uint16_t          percent_hbd = 0; /// the percent of HBD to key, unkept amounts will be received as VESTS
       bool              allow_votes   = true;      /// allows a post to receive votes;
       bool              allow_curation_rewards = true;
 
