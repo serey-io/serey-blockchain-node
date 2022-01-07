@@ -3138,7 +3138,8 @@ void database::process_funds()
 
     auto new_hbd = asset( 0, HBD_SYMBOL );
 
-    if( sps_fund.value )
+    //if( sps_fund.value )
+    if ( false )
     {
       new_hbd = asset( sps_fund, HIVE_SYMBOL ) * feed.current_median_history;
       adjust_balance( get_treasury_name(), new_hbd );
