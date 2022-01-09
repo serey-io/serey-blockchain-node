@@ -190,6 +190,8 @@ using namespace hive::protocol::testnet_blockchain_configuration;
 
 #define HIVE_CONTENT_REWARD_PERCENT_HF21      (65*HIVE_1_PERCENT)
 #define HIVE_PROPOSAL_FUND_PERCENT_HF21       (10*HIVE_1_PERCENT)
+#define HIVE_POSTS_PER_RESTRICTION_PERIOD     6
+#define HIVE_POSTS_RESTRICTION_PERIOD_DURATION (fc::seconds(60*60*24)) // 24 hours
 
 #define HIVE_HF21_CONVERGENT_LINEAR_RECENT_CLAIMS (fc::uint128_t(0,503600561838938636ull))
 #define HIVE_CONTENT_CONSTANT_HF21            (fc::uint128_t(0,2000000000000ull))
