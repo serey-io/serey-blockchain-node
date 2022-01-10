@@ -1,3 +1,5 @@
+string( REPLACE " -Werror" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
+
 add_subdirectory(db_fixture)
 add_subdirectory(bmic_objects)
 
