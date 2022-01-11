@@ -503,6 +503,7 @@ namespace hive { namespace protocol {
 
   void limit_order_create_operation::validate()const
   {
+    FC_ASSERT( false, "The internal DEX is disabled");
     validate_account_name( owner );
 
     FC_ASSERT(  ( is_asset_type( amount_to_sell, HIVE_SYMBOL ) && is_asset_type( min_to_receive, HBD_SYMBOL ) )
@@ -522,6 +523,7 @@ namespace hive { namespace protocol {
 
   void limit_order_create2_operation::validate()const
   {
+    FC_ASSERT( false, "The internal DEX is disabled");
     validate_account_name( owner );
 
     FC_ASSERT( amount_to_sell.symbol == exchange_rate.base.symbol, "Sell asset must be the base of the price" );
@@ -579,13 +581,15 @@ namespace hive { namespace protocol {
 
   void escrow_transfer_operation::validate()const
   {
+    FC_ASSERT( hbd_amount.amount == 0, "HBD unavailable." );
     validate_account_name( from );
     validate_account_name( to );
     validate_account_name( agent );
     FC_ASSERT( fee.amount >= 0, "fee cannot be negative" );
-    FC_ASSERT( hbd_amount.amount >= 0, "HBD amount cannot be negative" );
     FC_ASSERT( hive_amount.amount >= 0, "HIVE amount cannot be negative" );
-    FC_ASSERT( hbd_amount.amount > 0 || hive_amount.amount > 0, "escrow must transfer a non-zero amount" );
+    FC_ASSERT( hive_amount.amount > 0, "escrow must transfer a non-zero amount" );
+    // FC_ASSERT( hbd_amount.amount >= 0, "HBD amount cannot be negative" );
+    // FC_ASSERT( hbd_amount.amount > 0 || hive_amount.amount > 0, "escrow must transfer a non-zero amount" );
     FC_ASSERT( from != agent && to != agent, "agent must be a third party" );
     FC_ASSERT( (fee.symbol == HIVE_SYMBOL) || (fee.symbol == HBD_SYMBOL), "fee must be HIVE or HBD" );
     FC_ASSERT( hbd_amount.symbol == HBD_SYMBOL, "HBD amount must contain HBD asset" );
