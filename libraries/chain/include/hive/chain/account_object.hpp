@@ -189,6 +189,9 @@ namespace hive { namespace chain {
       bool              can_vote = true;
       bool              mined = true;
 
+      uint16_t          post_restriction_period_count = 0;
+      time_point_sec    post_restriction_period_end = time_point_sec(0);
+
     public:
 
       public_key_type   memo_key;   //public_key_type - 33 bytes; ABW: it belongs to metadata as it is not used by consensus, but witnesses need it here since they don't COLLECT_ACCOUNT_METADATA
@@ -614,6 +617,7 @@ FC_REFLECT( hive::chain::account_object,
           (delayed_votes)
           (sum_delayed_votes)
           (governance_vote_expiration_ts)
+          (post_restriction_period_count)(post_restriction_period_end)
         )
 
 CHAINBASE_SET_INDEX_TYPE( hive::chain::account_object, hive::chain::account_index )

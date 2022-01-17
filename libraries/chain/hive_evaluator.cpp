@@ -764,7 +764,6 @@ void comment_evaluator::do_apply( const comment_operation& o )
     FC_ASSERT( o.title.size() + o.body.size() + o.json_metadata.size(), "Cannot update comment because nothing appears to be changing." );
 
   const auto& auth = _db.get_account( o.author ); /// prove it exists
-
   const auto& by_permlink_idx = _db.get_index< comment_index >().indices().get< by_permlink >();
   auto itr = by_permlink_idx.find( comment_object::compute_author_and_permlink_hash( auth.get_id(), o.permlink ) );
   auto _now = _db.head_block_time();
@@ -777,6 +776,11 @@ void comment_evaluator::do_apply( const comment_operation& o )
       FC_ASSERT( parent->get_depth() < HIVE_MAX_COMMENT_DEPTH_PRE_HF17, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->get_depth())("y",HIVE_MAX_COMMENT_DEPTH_PRE_HF17) );
     else
       FC_ASSERT( parent->get_depth() < HIVE_MAX_COMMENT_DEPTH, "Comment is nested ${x} posts deep, maximum depth is ${y}.", ("x",parent->get_depth())("y",HIVE_MAX_COMMENT_DEPTH) );
+  }
+  else if ( _now < auth.post_restriction_period_end )
+  {
+    FC_ASSERT( auth.post_restriction_period_count < HIVE_POSTS_PER_RESTRICTION_PERIOD, 
+      "Only ${x} posts allowed per 24h.", ("x", HIVE_POSTS_PER_RESTRICTION_PERIOD) );
   }
 
   FC_ASSERT( fc::is_utf8( o.json_metadata ), "JSON Metadata must be UTF-8" );
@@ -832,6 +836,16 @@ void comment_evaluator::do_apply( const comment_operation& o )
       {
         a.last_root_post = _now;
         a.post_bandwidth = uint32_t( post_bandwidth );
+
+        if( a.post_restriction_period_end != fc::time_point_sec(0) 
+          && _now >= a.post_restriction_period_end ) 
+        {
+          a.post_restriction_period_end = fc::time_point_sec(0);
+          a.post_restriction_period_count = 0;
+        }
+        if( a.post_restriction_period_count == 0 ) 
+          a.post_restriction_period_end = _now + HIVE_POSTS_RESTRICTION_PERIOD_DURATION;
+        ++a.post_restriction_period_count;
       }
       a.last_post = _now;
       a.last_post_edit = _now;

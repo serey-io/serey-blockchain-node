@@ -649,6 +649,71 @@ BOOST_AUTO_TEST_CASE( comment_apply )
   FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE( comment_apply_restrict_to_6_posts_per_24h )
+{
+  try
+  {
+    ACTORS( (alice) )
+    auto push_op = [&](comment_operation& op) {
+      signed_transaction tx;
+      tx.set_expiration( db->head_block_time() + HIVE_MAX_TIME_UNTIL_EXPIRATION );
+      tx.operations.push_back( op );
+      sign( tx, alice_private_key );
+      db->push_transaction( tx, 0 );
+    };
+
+    // TODO make SEREY_HARDFORK_TIME
+    generate_blocks( HIVE_HARDFORK_0_20 );
+
+    comment_operation op;
+    op.author = "alice";
+    op.parent_author = "";
+    op.parent_permlink = "bar";
+    op.title = "baz";
+    op.body = "qux";
+    op.json_metadata = "{\"quux\":\"quz\"}";
+
+    time_point_sec post_restriction_period_end;
+    BOOST_TEST_MESSAGE( "--- Test Success Alice posting 6 posts in 24h" );
+    {
+      // in the beginning when nothing has been posted the counter will be 0 and the time will be 0 
+      BOOST_CHECK( db->get_account("alice").post_restriction_period_count == 0 );
+      BOOST_CHECK( db->get_account("alice").post_restriction_period_end == time_point_sec(0) );
+
+      post_restriction_period_end = db->head_block_time() + HIVE_POSTS_RESTRICTION_PERIOD_DURATION;
+      for( int i = 0; i < HIVE_POSTS_PER_RESTRICTION_PERIOD; ++i ) 
+      {
+        op.permlink = std::to_string(i);
+        push_op( op );
+        generate_blocks( db->head_block_time() + HIVE_MIN_ROOT_COMMENT_INTERVAL + fc::minutes(1) );
+      } 
+      
+      BOOST_CHECK( db->get_account("alice").post_restriction_period_count == 6 );
+      BOOST_CHECK( db->get_account("alice").post_restriction_period_end == post_restriction_period_end );
+    }
+
+    BOOST_TEST_MESSAGE( "--- Test Failure Alice posting 7th post in 24h" );
+    {
+      op.permlink = "6";
+      
+      HIVE_REQUIRE_ASSERT( push_op( op ), "auth.post_restriction_period_count < HIVE_POSTS_PER_RESTRICTION_PERIOD" );
+    }
+
+    BOOST_TEST_MESSAGE( "--- Test Success Alice can post after restriction_period" );
+    {
+      generate_blocks( post_restriction_period_end + fc::seconds(1) );
+      
+      post_restriction_period_end = db->head_block_time() + HIVE_POSTS_RESTRICTION_PERIOD_DURATION;
+      op.permlink = "7";
+      push_op( op );
+
+      BOOST_CHECK( db->get_account("alice").post_restriction_period_count == 1 );
+      BOOST_CHECK( db->get_account("alice").post_restriction_period_end == post_restriction_period_end );
+    }
+  }
+  FC_LOG_AND_RETHROW()
+}
+
 BOOST_AUTO_TEST_CASE( comment_delete_apply )
 {
   try
