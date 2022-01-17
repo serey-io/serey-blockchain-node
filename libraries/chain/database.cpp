@@ -3100,18 +3100,10 @@ void database::process_funds()
 
   if( has_hardfork( HIVE_HARDFORK_0_16__551) )
   {
-    /**
-      * At block 7,000,000 have a 9.5% instantaneous inflation rate, decreasing to 0.95% at a rate of 0.01%
-      * every 250k blocks. This narrowing will take approximately 20.5 years and will complete on block 220,750,000
-      */
-    int64_t start_inflation_rate = int64_t( HIVE_INFLATION_RATE_START_PERCENT );
-    int64_t inflation_rate_adjustment = int64_t( head_block_num() / HIVE_INFLATION_NARROWING_PERIOD );
-    int64_t inflation_rate_floor = int64_t( HIVE_INFLATION_RATE_STOP_PERCENT );
+    // Fixed inflation of 2% per year
+    int64_t inflation_rate = int64_t( HIVE_INFLATION_RATE_PERCENT );
 
-    // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-    int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
-
-    auto new_hive = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( HIVE_100_PERCENT ) * int64_t( HIVE_BLOCKS_PER_YEAR ) );
+    auto new_hive = ( props.virtual_supply.amount * inflation_rate ) / ( int64_t( HIVE_100_PERCENT ) * int64_t( HIVE_BLOCKS_PER_YEAR ) );
     auto content_reward = ( new_hive * props.content_reward_percent ) / HIVE_100_PERCENT;
     if( has_hardfork( HIVE_HARDFORK_0_17__774 ) )
       content_reward = pay_reward_funds( content_reward );
@@ -6174,7 +6166,7 @@ void database::apply_hardfork( uint32_t hardfork )
 
       modify( get< reward_fund_object, by_name >( HIVE_POST_REWARD_FUND_NAME ), [&]( reward_fund_object& rfo )
       {
-        rfo.percent_curation_rewards = 50 * HIVE_1_PERCENT;
+        rfo.percent_curation_rewards = 25 * HIVE_1_PERCENT;
         rfo.author_reward_curve = convergent_linear;
         rfo.curation_reward_curve = convergent_square_root;
         rfo.content_constant = HIVE_CONTENT_CONSTANT_HF21;

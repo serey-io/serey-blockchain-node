@@ -183,22 +183,26 @@ using namespace hive::protocol::testnet_blockchain_configuration;
 
 #define HIVE_DEFAULT_HBD_INTEREST_RATE        (10*HIVE_1_PERCENT) ///< 10% APR
 
-#define HIVE_INFLATION_RATE_START_PERCENT     (978) // Fixes block 7,000,000 to 9.5%
-#define HIVE_INFLATION_RATE_STOP_PERCENT      (95) // 0.95%
-#define HIVE_INFLATION_NARROWING_PERIOD       (250000) // Narrow 0.01% every 250k blocks
-#define HIVE_CONTENT_REWARD_PERCENT_HF16      (75*HIVE_1_PERCENT) //75% of inflation, 7.125% inflation
-#define HIVE_VESTING_FUND_PERCENT_HF16        (15*HIVE_1_PERCENT) //15% of inflation, 1.425% inflation
-#define HIVE_PROPOSAL_FUND_PERCENT_HF0        (0)
+#define SEREY_INFLATION                        (200)  // 2% yearly inflation
+#define SEREY_CONTENT_REWARD_PERCENT          (6000)  // 60% content reward (author+curation)
+#define SEREY_VESTING_REWARD_PERCENT          (3000)  // 30% for vesting reward pool
+#define SEREY_PROPOSAL_PERCENT                   (0)  // 0% for Proposal System fund
+#define SEREY_WITNESS_REWARD_PERCENT          (1000)  // 10% for witnesses (this variable isn't used. Implicitly calculated from the rest of 100%)
 
-#define HIVE_CONTENT_REWARD_PERCENT_HF21      (65*HIVE_1_PERCENT)
-#define HIVE_PROPOSAL_FUND_PERCENT_HF21       (10*HIVE_1_PERCENT)
+#define HIVE_INFLATION_RATE_PERCENT           SEREY_INFLATION
+#define HIVE_CONTENT_REWARD_PERCENT_HF16      SEREY_CONTENT_REWARD_PERCENT
+#define HIVE_VESTING_FUND_PERCENT_HF16        SEREY_VESTING_REWARD_PERCENT
+#define HIVE_PROPOSAL_FUND_PERCENT_HF0        SEREY_PROPOSAL_PERCENT
+
+#define HIVE_CONTENT_REWARD_PERCENT_HF21      SEREY_CONTENT_REWARD_PERCENT
+#define HIVE_PROPOSAL_FUND_PERCENT_HF21       SEREY_PROPOSAL_PERCENT
 #define HIVE_POSTS_PER_RESTRICTION_PERIOD     6
 #define HIVE_POSTS_RESTRICTION_PERIOD_DURATION (fc::seconds(60*60*24)) // 24 hours
 
 #define HIVE_HF21_CONVERGENT_LINEAR_RECENT_CLAIMS (fc::uint128_t(0,503600561838938636ull))
 #define HIVE_CONTENT_CONSTANT_HF21            (fc::uint128_t(0,2000000000000ull))
 
-#define HIVE_MINER_PAY_PERCENT                (HIVE_1_PERCENT) // 1%
+#define HIVE_MINER_PAY_PERCENT                (0)
 #define HIVE_MAX_RATION_DECAY_RATE            (1000000)
 
 #define HIVE_BANDWIDTH_AVERAGE_WINDOW_SECONDS (60*60*24*7) ///< 1 week
