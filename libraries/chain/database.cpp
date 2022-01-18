@@ -1453,7 +1453,8 @@ std::pair< asset, asset > database::create_hbd( const account_object& to_account
     const auto& median_price = get_feed_history().current_median_history;
     const auto& gpo = get_dynamic_global_properties();
 
-    if( !median_price.is_null() )
+    //if( !median_price.is_null() )
+    if ( false )  // The issuance of HBD is disabled
     {
       auto to_hbd = ( gpo.hbd_print_rate * hive.amount ) / HIVE_100_PERCENT;
       auto to_hive = hive.amount - to_hbd;
@@ -3137,7 +3138,8 @@ void database::process_funds()
 
     auto new_hbd = asset( 0, HBD_SYMBOL );
 
-    if( sps_fund.value )
+    //if( sps_fund.value )
+    if ( false )
     {
       new_hbd = asset( sps_fund, HIVE_SYMBOL ) * feed.current_median_history;
       adjust_balance( get_treasury_name(), new_hbd );
