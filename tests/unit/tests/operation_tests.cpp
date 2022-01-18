@@ -714,6 +714,62 @@ BOOST_AUTO_TEST_CASE( comment_apply_restrict_to_6_posts_per_24h )
   FC_LOG_AND_RETHROW()
 }
 
+BOOST_AUTO_TEST_CASE( comment_apply_reduced_interval_due_to_post_size )
+{ try {
+
+  BOOST_TEST_MESSAGE( "Testing: comment_apply_reduced_interval_due_to_post_size" );
+  ACTORS( (alice) );
+  auto push_op = [&]( comment_operation& op ) {
+    signed_transaction tx;
+    tx.set_expiration( db->head_block_time() + HIVE_MAX_TIME_UNTIL_EXPIRATION );
+    tx.operations.push_back( op );
+    sign( tx, alice_private_key );
+    db->push_transaction( tx, 0 );
+  };
+
+  generate_blocks( HIVE_HARDFORK_0_20__2019 );
+
+  comment_operation op;
+  op.author = "alice";
+  op.permlink = "";
+  op.parent_author = "";
+  op.parent_permlink = "foo";
+  op.title = "bar";
+  op.body = "";
+  op.json_metadata = "{\"foo\":\"bar\"}";
+
+  BOOST_TEST_MESSAGE( "--- success post big root comment size" );
+  {
+    op.permlink = "0";
+    op.body = string( HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL_SIZE + 1, 'a' );
+    push_op( op ); 
+  }
+
+  BOOST_TEST_MESSAGE( "--- failure repost big root comment size" );
+  {
+    op.permlink = "1";
+    op.body = string( HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL_SIZE + 1, 'a' );
+    HIVE_REQUIRE_ASSERT( push_op( op ), "( _now - auth.last_root_post ) > HIVE_MIN_ROOT_COMMENT_INTERVAL" );
+  }
+
+  BOOST_TEST_MESSAGE( "--- success post reduced root comment size" );
+  {
+    generate_blocks( db->head_block_time() + HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL + fc::seconds(1) );
+
+    op.permlink = "2";
+    op.body = string( HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL_SIZE - 1, 'a' );
+    push_op( op );
+  }
+
+  BOOST_TEST_MESSAGE( "--- failure repost reduced root comment size" );
+  {
+    op.permlink = "3";
+    op.body = string( HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL_SIZE - 1, 'a' );
+    HIVE_REQUIRE_ASSERT( push_op( op ), "( _now - auth.last_root_post ) >= HIVE_REDUCED_MIN_ROOT_COMMENT_INTERVAL" );
+  }
+
+} FC_LOG_AND_RETHROW() }
+
 BOOST_AUTO_TEST_CASE( comment_delete_apply )
 {
   try
