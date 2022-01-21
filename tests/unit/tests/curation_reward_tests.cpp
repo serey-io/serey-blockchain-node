@@ -529,15 +529,9 @@ struct curation_rewards_handler
   share_type calculate_reward()
   {
     const auto& props = db.get_dynamic_global_properties();
-
-    int64_t start_inflation_rate = int64_t( HIVE_INFLATION_RATE_START_PERCENT );
-    int64_t inflation_rate_adjustment = int64_t( db.head_block_num() / HIVE_INFLATION_NARROWING_PERIOD );
-    int64_t inflation_rate_floor = int64_t( HIVE_INFLATION_RATE_STOP_PERCENT );
-
-    // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
-    int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
-
-    auto new_hive = ( props.virtual_supply.amount * current_inflation_rate ) / ( int64_t( HIVE_100_PERCENT ) * int64_t( HIVE_BLOCKS_PER_YEAR ) );
+    
+    int64_t inflation_rate = int64_t( HIVE_INFLATION_RATE_PERCENT );
+    auto new_hive = ( props.virtual_supply.amount * inflation_rate ) / ( int64_t( HIVE_100_PERCENT ) * int64_t( HIVE_BLOCKS_PER_YEAR ) );
     return ( new_hive * props.content_reward_percent ) / HIVE_100_PERCENT;
   }
 
@@ -675,7 +669,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v0 )
                       *this,
                       window_input_data{ 25/*nr_voters*/, 12/*interval*/    , _a }/*early*/,
                       window_input_data{ 39/*nr_voters*/, 4480/*interval*/  , _a }/*mid*/,
-                      window_input_data{ 95/*nr_voters*/, 4480/*interval*/  , _a }/*late*/, 645/*reward*/ );
+                      window_input_data{ 95/*nr_voters*/, 4480/*interval*/  , _a }/*late*/, 64/*reward*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -692,7 +686,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v1 )
                       *this,
                       window_input_data{ 25/*nr_voters*/, 12/*interval*/    , _a }/*early*/,
                       window_input_data{ 39/*nr_voters*/, 4479/*interval*/  , _a }/*mid*/,
-                      window_input_data()/*late*/, 760/*reward*/ );
+                      window_input_data()/*late*/, 77/*reward*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -709,7 +703,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v2 )
                       *this,
                       window_input_data{ 25/*nr_voters*/, 12/*interval*/    , _a }/*early*/,
                       window_input_data{ 134/*nr_voters*/, 1930/*interval*/ , _a }/*mid*/,
-                      window_input_data()/*late*/, 411/*reward*/ );
+                      window_input_data()/*late*/, 41/*reward*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -726,7 +720,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v3 )
                       *this,
                       window_input_data{ 50/*nr_voters*/, 1720/*interval*/, _a }/*early*/,
                       window_input_data()/*mid*/,
-                      window_input_data()/*late*/, 805/*reward*/, 12/*offset*/ );
+                      window_input_data()/*late*/, 81/*reward*/, 12/*offset*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -743,7 +737,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v4 )
                       *this,
                       window_input_data()/*early*/,
                       window_input_data{ 50/*nr_voters*/, 300/*interval*/, _a }/*mid*/,
-                      window_input_data()/*late*/, 805/*reward*/, 25*3600/*offset*/ );
+                      window_input_data()/*late*/, 81/*reward*/, 25*3600/*offset*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -760,7 +754,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v5 )
                       *this,
                       window_input_data{ 50/*nr_voters*/, 1720/*interval*/, _a }/*early*/,
                       window_input_data()/*mid*/,
-                      window_input_data()/*late*/, 805/*reward*/, 12/*offset*/ );
+                      window_input_data()/*late*/, 81/*reward*/, 12/*offset*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -777,7 +771,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v6 )
                       *this,
                       window_input_data()/*early*/,
                       window_input_data{ 50/*nr_voters*/, 300/*interval*/, _a }/*mid*/,
-                      window_input_data()/*late*/, 805/*reward*/, 25*3600/*offset*/ );
+                      window_input_data()/*late*/, 81/*reward*/, 25*3600/*offset*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -796,7 +790,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v7 )
                       *this,
                       window_input_data{ 1/*nr_voters*/, 12/*interval*/, _a }/*early*/,
                       window_input_data{ 49/*nr_voters*/, 300/*interval*/, _a }/*mid*/,
-                      window_input_data()/*late*/, 1579/*reward*/, 24*3600 - 90/*offset*/ );
+                      window_input_data()/*late*/, 160/*reward*/, 24*3600 - 90/*offset*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -815,7 +809,7 @@ BOOST_AUTO_TEST_CASE( basic_test_v8 )
                       *this,
                       window_input_data{ 5/*nr_voters*/, 12/*interval*/, _a }/*early*/,
                       window_input_data{ 45/*nr_voters*/, 300/*interval*/, _a }/*mid*/,
-                      window_input_data()/*late*/, 1464/*reward*/, 24*3600 - 90/*offset*/ );
+                      window_input_data()/*late*/, 149/*reward*/, 24*3600 - 90/*offset*/ );
   }
   FC_LOG_AND_RETHROW()
 }
@@ -930,7 +924,7 @@ BOOST_AUTO_TEST_CASE( one_vote_for_comment )
     {
       auto cmp = []( const reward_stat& item_a, const reward_stat& item_b )
       {
-        return item_a.value == 12463 && item_a.value == item_b.value;
+        return item_a.value == 1278 && item_a.value == item_b.value;
       };
       reward_stat::check_phases( early_stats, mid_stats, cmp );
       reward_stat::check_phases( mid_stats, late_stats, cmp );
@@ -1026,14 +1020,14 @@ BOOST_AUTO_TEST_CASE( two_votes_for_comment )
       BOOST_REQUIRE_EQUAL( mid_stats.size(),    2 );
       BOOST_REQUIRE_EQUAL( late_stats.size(),   2 );
 
-      BOOST_REQUIRE_EQUAL( early_stats[0].value, 8308 );
-      BOOST_REQUIRE_EQUAL( early_stats[1].value, 11078 );
+      BOOST_REQUIRE_EQUAL( early_stats[0].value, 852 );
+      BOOST_REQUIRE_EQUAL( early_stats[1].value, 1136 );
 
-      BOOST_REQUIRE_EQUAL( mid_stats[0].value, 4154 );
-      BOOST_REQUIRE_EQUAL( mid_stats[1].value, 9970 );
+      BOOST_REQUIRE_EQUAL( mid_stats[0].value, 425 );
+      BOOST_REQUIRE_EQUAL( mid_stats[1].value, 1022 );
 
-      BOOST_REQUIRE_EQUAL( late_stats[0].value, 1384 );
-      BOOST_REQUIRE_EQUAL( late_stats[1].value, 2492 );
+      BOOST_REQUIRE_EQUAL( late_stats[0].value, 141 );
+      BOOST_REQUIRE_EQUAL( late_stats[1].value, 255 );
 
       reward_stat::display_stats( early_stats );
       reward_stat::display_stats( mid_stats );
