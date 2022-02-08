@@ -10,6 +10,7 @@ from graphene_rpc import GrapheneRPC
 
 def dump(path, j):
     basepath = Path("serey_dump")
+    basepath.mkdir(parents=True, exist_ok=True)
     with open(basepath / f"{path}.json", "w") as f:
         json.dump(j, f, indent=2)
 
@@ -23,12 +24,15 @@ def parse_time(s):
 @click.option(
     "--min_cashout_time", type=str, required=True,
     help="Format: YYYY-MM-DDTHH:MM:SS")
+@click.option(
+    "--rpc_url", type=str,
+    help="Format: http(s)://api.serey.io",
+    default="http://localhost:8090/rpc")
 # fmt: on
-def main(min_cashout_time):
+def main(min_cashout_time, rpc_url):
     min_cashout_time = parse_time(min_cashout_time)
 
-    url = "http://localhost:8090/rpc"
-    rpc = GrapheneRPC(url)
+    rpc = GrapheneRPC(rpc_url)
 
     ####################################################################################
     # ACCOUNTS
@@ -48,10 +52,18 @@ def main(min_cashout_time):
     ####################################################################################
     # PENDING_CASHOUTS
     ####################################################################################
-    params = {"tag": "", "limit": 1000000000000000000, "truncate_body": 1}
-
-    res = rpc.call("get_discussions_by_payout", params=[params])
-    discussion_objs = res.json()["result"]
+    discussion_objs = []
+    discussions = []
+    while True:
+        params = {"tag": "", "limit": 100, "truncate_body": 1}
+        if discussions:
+            params["start_author"] = discussions[-1]["author"]
+            params["start_permlink"] = discussions[-1]["permlink"]
+        res = rpc.call("get_discussions_by_payout", params=[params])
+        discussions = res.json()["result"]
+        discussion_objs.extend(discussions)
+        if len(discussions) < 100:
+            break
 
     res = rpc.call("get_post_discussions_by_payout", params=[params])
     post_discussion_objs = res.json()["result"]
