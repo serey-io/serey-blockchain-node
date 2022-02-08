@@ -72,7 +72,7 @@ using namespace hive::protocol::testnet_blockchain_configuration;
 
 #define HIVE_BLOCKCHAIN_VERSION               ( version(1, 25, 0) )
 
-#define HIVE_INIT_PUBLIC_KEY_STR              "SRY7iX3tZLLnoBGasFmHXz8vTr4NnQqQDJiPer8W83uM5yKFzmZ5b"
+#define HIVE_INIT_PUBLIC_KEY_STR              "SRY8adcuYfPTc37uL7SFodWx1JTHT62kArmC2pmbovP7eVosr53r2"
 #define STEEM_CHAIN_ID                        (fc::sha256::hash("Serey v2"))
 #define HIVE_CHAIN_ID                         (fc::sha256::hash("Serey v2"))
 #define HIVE_ADDRESS_PREFIX                   "SRY"
