@@ -51,7 +51,7 @@ def cli(input_dir, output_file_path, is_testnet):
         genesis_reward_fund=genesis_reward_fund, 
         genesis_global_properties=genesis_global_properties
     )
-    with open(output_file_path, "w") as f:
+    with open(output_file_path, "w+") as f:
         print(genesis, file=f)
 
 
