@@ -1,5 +1,5 @@
-IMAGE_REGISTRY := registry.to-be-defined.io
-IMAGE_NAME := serey/core
+IMAGE_REGISTRY := docker.io
+IMAGE_NAME := xeroc/serey
 RELEASE_VERSION := $(shell git describe)
 RELEASE_DATE := $(shell date -u +'%Y-%m-%dT%H:%M:%SZ')
 DOCKER_BUILD_ARGS := --build-arg BUILD_DATE=$(RELEASE_DATE) --build-arg VCS_REF=$(RELEASE_VERSION)
@@ -24,5 +24,4 @@ docker_build:
 
 .PHONY: docker_publish
 docker_publish:
-	# FIXME
-	#docker push $(IMAGE_REGISTRY)/$(IMAGE_NAME):$(RELEASE_VERSION)
+	docker push $(IMAGE_REGISTRY)/$(IMAGE_NAME):$(RELEASE_VERSION)
