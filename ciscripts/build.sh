@@ -12,6 +12,9 @@ BUILD_DIR="${PWD}/build"
 CMAKE_BUILD_TYPE=Release
 TIME_BEGIN=$( date -u +%s )
 
+# Required for the genesis building through CMake
+pip3 install click jinja2
+
 git submodule update --init --recursive
 mkdir -p "${BUILD_DIR}"
 cd ${BUILD_DIR}
