@@ -7,6 +7,7 @@
 #include <hive/chain/util/impacted.hpp>
 
 #include <hive/protocol/config.hpp>
+#include <hive/protocol/genesis.hpp>
 
 #include <hive/chain/database.hpp>
 #include <hive/chain/index.hpp>
@@ -212,7 +213,25 @@ void reputation_plugin::plugin_initialize( const boost::program_options::variabl
   FC_CAPTURE_AND_RETHROW()
 }
 
-void reputation_plugin::plugin_startup() {}
+void reputation_plugin::plugin_startup() 
+{
+  if( my->_db.head_block_num() == 0 )
+  {
+    auto genesis_accounts = MAKE_GENESIS_ACCOUNTS();
+    for( auto& account : genesis_accounts.get_array() )
+    {
+      my->_db.create< reputation_object >( [&]( reputation_object& o ) {
+        auto reputation = account["reputation"].as_uint64();
+        o.account = account["name"].get_string();
+        o.reputation = reputation;
+      });
+    }
+  }
+  else
+  {
+    elog(("Initializing reputation plugin without replaying could possibly lead to a wrong state"));
+  }
+}
 
 void reputation_plugin::plugin_shutdown()
 {

@@ -17,6 +17,9 @@ Release/
 # Language Server
 **/.ccls-cache/
 
+# Debugger
+.vimspector.json
+
 # CMake files
 cmake_install.cmake
 CMakeCache.txt
@@ -108,6 +111,6 @@ build_*/
 /out/isenseconfig/Linux-Release
 
 # various log and benchmark files
-advanced_benchmark.json
-r_advanced_benchmark.json
+*advanced_benchmark.json
+r_*advanced_benchmark.json
 *.log

@@ -1,20 +1,35 @@
 file(GLOB HEADERS "include/hive/protocol/*.hpp")
 file(GLOB HF_PARTS "hardfork.d/*.hpp")
+file(GLOB GENESIS_PARTS "genesis.d/*.hpp")
 
 if( MSVC )
    set( hardfork_hpp_file "${CMAKE_CURRENT_SOURCE_DIR}/include/hive/protocol/hardfork.hpp" )
    add_custom_target( build_hardfork_hpp
       COMMAND cat-parts "${CMAKE_CURRENT_SOURCE_DIR}/hardfork.d" ${hardfork_hpp_file} )
+      # TODO genesis windows?
    add_dependencies( build_hardfork_hpp cat-parts )
 else( MSVC )
+   set( build_helpers_dir ${CMAKE_CURRENT_SOURCE_DIR}/../../programs/build_helpers )
+
    set( hardfork_hpp_file "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/hardfork.hpp" )
    add_custom_command(
-      COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/../../programs/build_helpers
+      COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${build_helpers_dir}
       python3 -m hive_build_helpers.cat_parts
       "${CMAKE_CURRENT_SOURCE_DIR}/hardfork.d"
       ${hardfork_hpp_file}
       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/hardfork.hpp"
       DEPENDS ${HF_PARTS}
+   )
+   
+   set( genesis_hpp_file "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/genesis.hpp" )
+   add_custom_command( 
+      COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${build_helpers_dir}
+      python3 -m hive_build_helpers.build_genesis
+      "${CMAKE_CURRENT_SOURCE_DIR}/genesis.d" 
+      ${genesis_hpp_file}
+      ${BUILD_HIVE_TESTNET}
+      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/genesis.hpp"
+      DEPENDS ${GENESIS_PARTS}
    )
 endif( MSVC )
 
@@ -49,7 +64,7 @@ add_library( hive_protocol
 
              ${HEADERS}
              ${hardfork_hpp_file}
-             "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/hardfork.hpp"
+             ${genesis_hpp_file}
            )
 
 target_link_libraries( hive_protocol hive_schema fc )

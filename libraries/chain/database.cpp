@@ -4,6 +4,7 @@
 
 #include <hive/protocol/hive_operations.hpp>
 #include <hive/protocol/get_config.hpp>
+#include <hive/protocol/genesis.hpp>
 
 #include <hive/chain/block_summary_object.hpp>
 #include <hive/chain/compound.hpp>
@@ -3844,7 +3845,9 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
       } );
     }
 
-    create< dynamic_global_property_object >( HIVE_INIT_MINER_NAME, asset( init_supply, HIVE_SYMBOL ), asset( hbd_init_supply, HBD_SYMBOL ) );
+    const auto& dynamic_global_props = create< dynamic_global_property_object >( 
+      HIVE_INIT_MINER_NAME, asset( init_supply, HIVE_SYMBOL ), asset( hbd_init_supply, HBD_SYMBOL ) );
+
     // feed initial token supply to first miner
     modify( get_account( HIVE_INIT_MINER_NAME ), [&]( account_object& a )
     {
@@ -3907,10 +3910,124 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
       util::rd_setup_dynamics_params( account_subsidy_user_params, account_subsidy_system_params, wso.account_subsidy_rd );
       util::rd_setup_dynamics_params( account_subsidy_per_witness_user_params, account_subsidy_system_params, wso.account_subsidy_witness_rd );
     } );
-
+  
 #ifdef HIVE_ENABLE_SMT
     create< nai_pool_object >( [&]( nai_pool_object& npo ) {} );
 #endif
+  
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // INITIALIZE SEREY GENESIS 
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    auto genesis_global_properties = MAKE_GENESIS_GLOBAL_PROPERTIES();
+    modify( dynamic_global_props, [&]( dynamic_global_property_object& o ) {
+      o.total_vesting_fund_hive = asset( genesis_global_properties["total_vesting_fund_steem"].as_int64(), HIVE_SYMBOL );
+      o.pending_rewarded_vesting_hive = asset( genesis_global_properties["pending_rewarded_vesting_steem"].as_int64(), HIVE_SYMBOL );
+
+      o.total_vesting_shares = asset( genesis_global_properties["total_vesting_shares"].as_int64(), VESTS_SYMBOL );
+      o.pending_rewarded_vesting_shares = asset( genesis_global_properties["pending_rewarded_vesting_shares"].as_int64(), VESTS_SYMBOL );
+    });
+
+    auto now = fc::time_point::now();
+    auto genesis_accounts = MAKE_GENESIS_ACCOUNTS();
+    for( auto& account : genesis_accounts.get_array() )
+    {
+      auto name = account["name"].get_string();
+      const auto& account_obj = create< account_object >( name, public_key_type( account["memo_key"].get_string() ) );
+      modify( account_obj, [&]( account_object& o ) {
+        o.balance = asset( account["balance"].as_uint64(), HIVE_SYMBOL )
+          + asset( account["reward_steem_balance"].as_uint64(), HIVE_SYMBOL );
+
+        o.vesting_shares = asset( account["vesting_shares"].as_uint64(), VESTS_SYMBOL )
+          + asset( account["reward_vesting_balance"].as_uint64(), VESTS_SYMBOL );
+          // + reward_vesting_steem (will be adjusted later else it would be a nested modify)
+          // + vesting_balance (will be adjusted later else it would be a nested modify)
+
+        o.savings_balance = asset( account["savings_balance"].as_uint64(), HIVE_SYMBOL );
+        o.curation_rewards = account["curation_rewards"].as_uint64();
+        o.posting_rewards = account["posting_rewards"].as_uint64();
+        o.post_count = account["post_count"].as_uint64();
+        o.created = time_point_sec::from_iso_string( account["created"].as_string() );
+
+        o.voting_manabar = util::manabar( HIVE_100_PERCENT, now.sec_since_epoch() );
+        o.downvote_manabar = util::manabar( HIVE_100_PERCENT, now.sec_since_epoch() );
+      });
+
+      create< account_metadata_object >( [&]( account_metadata_object& o) {
+        o.account = account_obj.get_id();
+        from_string( o.json_metadata, account["json_metadata"].get_string() );
+      });
+
+      create< account_authority_object >( [&]( account_authority_object& o )
+      {
+        o.account = name;
+
+        auto set_auths = [&]( auto& target_auth, auto& source_auth )
+        {
+          target_auth.weight_threshold = source_auth["weight_threshold"].as_uint64();
+
+          const auto& account_auths = source_auth["account_auths"].get_array();
+          for( const auto& auth : account_auths ) 
+          {
+            const auto& aauth = auth.get_array(); 
+            const auto& auth_name = aauth[0].get_string();
+            const auto weight = aauth[1].as_uint64();
+            target_auth.add_authority( auth_name, weight ); 
+          }
+
+          const auto& key_auths = source_auth["key_auths"].get_array();
+          for( const auto& auth : key_auths ) 
+          {
+            const auto& aauth = auth.get_array(); 
+            const auto& auth_key = public_key_type( aauth[0].get_string() );
+            const auto& weight = aauth[1].as_uint64();
+            target_auth.add_authority( auth_key, weight );
+          }
+        };
+
+        set_auths( o.owner, account["owner"] );
+        set_auths( o.active, account["active"] );
+        set_auths( o.posting, account["posting"] );
+      });
+
+      const auto vesting_balance = asset( account["vesting_balance"].as_uint64(), HIVE_SYMBOL );
+      if( vesting_balance != asset( 0, HIVE_SYMBOL ) )
+        adjust_account_vesting_balance( account_obj, vesting_balance, true, []( asset _ ) {} );
+
+      const auto reward_vesting_steem = asset( account["reward_vesting_steem"].as_uint64(), HIVE_SYMBOL );
+      if( reward_vesting_steem != asset( 0, HIVE_SYMBOL ) )
+        adjust_account_vesting_balance( account_obj, reward_vesting_steem, true, []( asset _ ) {} );
+    }
+    
+    // set recovery account, genesis proxies and adjust vesting balance
+    for( auto& account : genesis_accounts.get_array() )
+    {
+      const auto& account_obj = get_account( account["name"].get_string() );
+        
+      modify( account_obj, [&]( account_object& o ) {
+#ifndef IS_TEST_NET
+          o.set_recovery_account( get_account( "serey" ) );
+#endif
+      });
+
+      auto proxy_name = account["proxy"].get_string();
+      if( !proxy_name.empty() )
+      {
+        modify( account_obj, [&]( account_object& o ) {
+          o.set_proxy( get_account( proxy_name ) );
+        });
+      }
+    }
+
+    // create reward fund
+    auto genesis_reward_fund = MAKE_GENESIS_REWARD_FUND();
+    auto& post_rf = create< reward_fund_object >( 
+      HIVE_POST_REWARD_FUND_NAME, 
+      asset( genesis_reward_fund["reward_balance"].as_uint64(), HIVE_SYMBOL ), 
+      head_block_time()
+    );
+    // As a shortcut in payout processing, we use the id as an array index.
+    // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
+    FC_ASSERT( post_rf.get_id() == reward_fund_id_type() );
   }
   FC_CAPTURE_AND_RETHROW()
 }
@@ -6017,17 +6134,6 @@ void database::apply_hardfork( uint32_t hardfork )
         });
 
         const auto& gpo = get_dynamic_global_properties();
-
-        auto& post_rf = create< reward_fund_object >( HIVE_POST_REWARD_FUND_NAME, gpo.get_total_reward_fund_hive(), head_block_time()
-#ifndef IS_TEST_NET
-          , HIVE_HF_17_RECENT_CLAIMS
-#endif
-          );
-
-        // As a shortcut in payout processing, we use the id as an array index.
-        // The IDs must be assigned this way. The assertion is a dummy check to ensure this happens.
-        FC_ASSERT( post_rf.get_id() == reward_fund_id_type() );
-
         modify( gpo, [&]( dynamic_global_property_object& g )
         {
           g.total_reward_fund_hive = asset( 0, HIVE_SYMBOL );
