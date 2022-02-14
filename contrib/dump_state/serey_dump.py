@@ -19,6 +19,15 @@ def parse_time(s):
     return dt.datetime.strptime(s, "%Y-%m-%dT%H:%M:%S")
 
 
+def extract_amount(s: str):
+    amount, symbol = s.split(" ")
+    if symbol == "VESTS":
+        precision = 6
+    elif symbol in ["SRY", "SEREY"]:
+        precision = 3
+    return int(float(amount) * 10**precision)
+
+
 # fmt: off
 @click.command()
 @click.option(
@@ -40,6 +49,20 @@ def main(min_cashout_time, rpc_url):
     account_names = rpc.get_all_account_names()
     res = rpc.call("get_accounts", params=[account_names])
     account_objs = res.json()["result"]
+    for i in account_objs:
+        for k in [
+            "vesting_balance",
+            "balance",
+            "savings_balance",
+            "reward_steem_balance",
+            "reward_vesting_balance",
+            "reward_vesting_steem",
+            "vesting_shares",
+            "delegated_vesting_shares",
+            "received_vesting_shares",
+            "vesting_withdraw_rate",
+        ]:
+            i[k] = extract_amount(i[k])
     dump("accounts", account_objs)
 
     ####################################################################################
@@ -47,7 +70,25 @@ def main(min_cashout_time, rpc_url):
     ####################################################################################
     res = rpc.call("get_reward_fund", params=["post"])
     reward_fund = res.json()["result"]
+    reward_fund["reward_balance"] = extract_amount(reward_fund["reward_balance"])
     dump("reward_fund", reward_fund)
+
+    ####################################################################################
+    # Dynamic Properties
+    ####################################################################################
+    res = rpc.call("get_dynamic_global_properties", params=["post"])
+    dynamic_global_properties = res.json()["result"]
+    for k in [
+        "current_supply",
+        "confidential_supply",
+        "total_vesting_fund_steem",
+        "total_reward_fund_steem",
+        "pending_rewarded_vesting_steem",
+        "pending_rewarded_vesting_shares",
+        "total_vesting_shares",
+    ]:
+        dynamic_global_properties[k] = extract_amount(dynamic_global_properties[k])
+    dump("dynamic_global_properties", dynamic_global_properties)
 
     ####################################################################################
     # PENDING_CASHOUTS
@@ -81,11 +122,8 @@ def main(min_cashout_time, rpc_url):
     fused.update({o["id"]: o for o in post_discussion_objs})
     fused.update({o["id"]: o for o in comment_discussion_objs})
 
-    has_pending_cashout = lambda o: (
-        parse_time(o["cashout_time"]) > min_cashout_time
-    )
+    has_pending_cashout = lambda o: (parse_time(o["cashout_time"]) > min_cashout_time)
     dump("discussions", [o for o in fused.values() if has_pending_cashout(o)])
-
 
 
 if __name__ == "__main__":
