@@ -21,14 +21,17 @@ else( MSVC )
       DEPENDS ${HF_PARTS}
    )
    
+   MESSAGE(STATUS "Generating genesis file from templates")
    set( genesis_hpp_file "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/genesis.hpp" )
-   add_custom_command( 
+   add_custom_command(
       COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${build_helpers_dir}
-      python3 -m hive_build_helpers.build_genesis
-      "${CMAKE_CURRENT_SOURCE_DIR}/genesis.d" 
-      ${genesis_hpp_file}
-      ${BUILD_HIVE_TESTNET}
-      OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/genesis.hpp"
+         python3 -m hive_build_helpers.build_genesis
+         "${CMAKE_CURRENT_SOURCE_DIR}/genesis.d"
+         ${genesis_hpp_file}
+         ${BUILD_HIVE_TESTNET}
+      VERBATIM
+      OUTPUT
+         "${CMAKE_CURRENT_BINARY_DIR}/include/hive/protocol/genesis.hpp"
       DEPENDS ${GENESIS_PARTS}
    )
 endif( MSVC )
