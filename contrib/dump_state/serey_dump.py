@@ -12,7 +12,9 @@ def dump(path, j):
     basepath = Path("serey_dump")
     basepath.mkdir(parents=True, exist_ok=True)
     with open(basepath / f"{path}.json", "w") as f:
-        json.dump(j, f, indent=2)
+        # Nicefy:
+        #json.dump(j, f, indent=2)
+        json.dump(j, f)
 
 
 def parse_time(s):
