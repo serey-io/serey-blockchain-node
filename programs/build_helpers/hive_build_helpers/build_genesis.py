@@ -43,16 +43,39 @@ def cli(input_dir, output_file_path, is_testnet):
         genesis_accounts = [line.replace("SRY", "TST", 1) for line in genesis_accounts]
 
     genesis_reward_fund = read_clean(genesis_reward_fund_path)
-    
+
     genesis_global_properties = read_clean(genesis_global_properties_path)
 
     genesis = template.render(
-        genesis_accounts=genesis_accounts, 
-        genesis_reward_fund=genesis_reward_fund, 
-        genesis_global_properties=genesis_global_properties
+        genesis_accounts=genesis_accounts,
+        genesis_reward_fund=genesis_reward_fund,
+        genesis_global_properties=genesis_global_properties,
     )
-    with open(output_file_path, "w+") as f:
+
+    if not output_file_path.parent.exists():
+        try:
+            output_file_path.parent.mkdir(parents=True)
+        except FileExistsError:
+            pass
+        except:
+            print(
+                'Unexpected error occured while trying to create directory "{}"'.format(
+                    out_file.parent.absolute().as_posix()
+                )
+            )
+            raise
+    elif not output_file_path.parent.is_dir():
+        print(
+            '"{}" is not a directory'.format(
+                output_file_path.parent.absolute().as_posix()
+            )
+        )
+        return 1
+
+    with output_file_path.open(mode="w") as f:
         print(genesis, file=f)
+    print('Built "{}" from .d directory'.format(output_file_path))
+    return 0
 
 
 if __name__ == "__main__":
