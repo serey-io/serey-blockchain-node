@@ -3845,9 +3845,6 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
       } );
     }
 
-    const auto& dynamic_global_props = create< dynamic_global_property_object >( 
-      HIVE_INIT_MINER_NAME, asset( init_supply, HIVE_SYMBOL ), asset( hbd_init_supply, HBD_SYMBOL ) );
-
     // feed initial token supply to first miner
     modify( get_account( HIVE_INIT_MINER_NAME ), [&]( account_object& a )
     {
@@ -3918,6 +3915,9 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // INITIALIZE SEREY GENESIS 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    const auto& dynamic_global_props = create< dynamic_global_property_object >( 
+      HIVE_INIT_MINER_NAME, asset( init_supply, HIVE_SYMBOL ), asset( hbd_init_supply, HBD_SYMBOL ) );
+    ilog( "Importing global properties ..." );
     auto genesis_global_properties = MAKE_GENESIS_GLOBAL_PROPERTIES();
     modify( dynamic_global_props, [&]( dynamic_global_property_object& o ) {
       o.total_vesting_fund_hive = asset( genesis_global_properties["total_vesting_fund_steem"].as_int64(), HIVE_SYMBOL );
@@ -3927,11 +3927,16 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
       o.pending_rewarded_vesting_shares = asset( genesis_global_properties["pending_rewarded_vesting_shares"].as_int64(), VESTS_SYMBOL );
     });
 
+    ilog( "Importing accounts ..." );
     auto now = fc::time_point::now();
     auto genesis_accounts = MAKE_GENESIS_ACCOUNTS();
     for( auto& account : genesis_accounts.get_array() )
     {
       auto name = account["name"].get_string();
+      // Skip those accounts that have been generated above
+      if (find_account(name))
+          continue;
+
       const auto& account_obj = create< account_object >( name, public_key_type( account["memo_key"].get_string() ) );
       modify( account_obj, [&]( account_object& o ) {
         o.balance = asset( account["balance"].as_uint64(), HIVE_SYMBOL )
@@ -4018,6 +4023,7 @@ void database::init_genesis( uint64_t init_supply, uint64_t hbd_init_supply )
       }
     }
 
+    ilog( "Importing reward fund ..." );
     // create reward fund
     auto genesis_reward_fund = MAKE_GENESIS_REWARD_FUND();
     auto& post_rf = create< reward_fund_object >( 
@@ -6007,7 +6013,8 @@ void database::apply_hardfork( uint32_t hardfork )
   switch( hardfork )
   {
     case HIVE_HARDFORK_0_1:
-      perform_vesting_share_split( 1000000 );
+      // We import vesting balances from v1 and thus had this take place in the past blockchain
+      //perform_vesting_share_split( 1000000 );
       break;
     case HIVE_HARDFORK_0_2:
       retally_witness_votes();
