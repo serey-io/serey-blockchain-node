@@ -1027,14 +1027,18 @@ map< uint32_t, applied_operation > database_api::get_account_history( string acc
    {
       FC_ASSERT( limit <= 10000, "Limit of ${l} is greater than maxmimum allowed", ("l",limit) );
       FC_ASSERT( from >= limit, "From must be greater than limit" );
+      FC_ASSERT( limit > 0, "limit must be great than 0" );
    //   idump((account)(from)(limit));
+
+      map<uint32_t, applied_operation> result;
       const auto& idx = my->_db.get_index<account_history_index>().indices().get<by_account>();
       auto itr = idx.lower_bound( boost::make_tuple( account, from ) );
+      // we reached the already, e.g. no entires?
+      if( itr == idx.end() ) return result;
    //   if( itr != idx.end() ) idump((*itr));
       auto end = idx.upper_bound( boost::make_tuple( account, std::max( int64_t(0), int64_t(itr->sequence)-limit ) ) );
    //   if( end != idx.end() ) idump((*end));
 
-      map<uint32_t, applied_operation> result;
       while( itr != end )
       {
          result[itr->sequence] = my->_db.get(itr->op);
