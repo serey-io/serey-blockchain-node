@@ -1623,16 +1623,34 @@ void database::process_funds()
 //   // below subtraction cannot underflow int64_t because inflation_rate_adjustment is <2^32
 //   int64_t current_inflation_rate = std::max( start_inflation_rate - inflation_rate_adjustment, inflation_rate_floor );
 
-   int64_t current_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_PERCENT );
+   int64_t current_inflation_rate;
+   share_type new_steem;
+   share_type vesting_reward;
+   share_type content_reward;
+   share_type foundation_fund;
 
-   auto new_steem = ( props.current_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
-   auto content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
-   content_reward = pay_reward_funds( content_reward ); /// 55% to content creator
-   auto vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 20% to vesting fund
+   if (head_block_time() <= time_point_sec(SEREY_HARDFORK_0_1_TIME))
+   {
+       current_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_PERCENT );
+
+       new_steem = ( props.current_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
+       vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 20% to vesting fund
+       foundation_fund = ( new_steem * STEEMIT_FOUNDATION_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 10%
+       content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT ) / STEEMIT_100_PERCENT;
+   } else {
+       current_inflation_rate = int64_t( STEEMIT_INFLATION_RATE_PERCENT_HF1 );
+
+       new_steem = ( props.current_supply.amount * current_inflation_rate ) / ( int64_t( STEEMIT_100_PERCENT ) * int64_t( STEEMIT_BLOCKS_PER_YEAR ) );
+       vesting_reward = ( new_steem * STEEMIT_VESTING_FUND_PERCENT_HF1 ) / STEEMIT_100_PERCENT; /// 20% to vesting fund
+       foundation_fund = ( new_steem * STEEMIT_FOUNDATION_FUND_PERCENT_HF1 ) / STEEMIT_100_PERCENT; /// 10%
+       content_reward = ( new_steem * STEEMIT_CONTENT_REWARD_PERCENT_HF1 ) / STEEMIT_100_PERCENT;
+   }
+
    if (block_num < STEEMIT_START_VESTING_BLOCK) {
       vesting_reward = 0;
    }
-   auto foundation_fund = ( new_steem * STEEMIT_FOUNDATION_FUND_PERCENT ) / STEEMIT_100_PERCENT; /// 10%
+
+   content_reward = pay_reward_funds( content_reward );
    auto witness_reward = new_steem - content_reward - vesting_reward - foundation_fund; /// Remaining 15% to witness pay
 
    const auto& cwit = get_witness( props.current_witness );
