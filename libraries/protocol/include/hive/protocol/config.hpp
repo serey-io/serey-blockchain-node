@@ -183,11 +183,11 @@ using namespace hive::protocol::testnet_blockchain_configuration;
 
 #define HIVE_DEFAULT_HBD_INTEREST_RATE        (10*HIVE_1_PERCENT) ///< 10% APR
 
-#define SEREY_INFLATION                        (200)  // 2% yearly inflation
+#define SEREY_INFLATION                        (250)  // 2.5% yearly inflation
 #define SEREY_CONTENT_REWARD_PERCENT          (6000)  // 60% content reward (author+curation)
-#define SEREY_VESTING_REWARD_PERCENT          (3000)  // 30% for vesting reward pool
+#define SEREY_VESTING_REWARD_PERCENT          (1500)  // 15% for vesting reward pool
 #define SEREY_PROPOSAL_PERCENT                   (0)  // 0% for Proposal System fund
-#define SEREY_WITNESS_REWARD_PERCENT          (1000)  // 10% for witnesses (this variable isn't used. Implicitly calculated from the rest of 100%)
+#define SEREY_WITNESS_REWARD_PERCENT          (2500)  // 10% for witnesses (this variable isn't used. Implicitly calculated from the rest of 100%)
 
 #define HIVE_INFLATION_RATE_PERCENT           SEREY_INFLATION
 #define HIVE_CONTENT_REWARD_PERCENT_HF16      SEREY_CONTENT_REWARD_PERCENT
